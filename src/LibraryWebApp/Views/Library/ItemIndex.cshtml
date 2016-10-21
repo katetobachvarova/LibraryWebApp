@@ -1,0 +1,60 @@
+@model IEnumerable<LibraryWebApp.Models.Item>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h2>Index</h2>
+
+<p>
+    <a asp-action="ItemCreate">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Title.Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Title.Section.Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Condition)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.CurrentLocation)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Material)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Title.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Title.Section.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Condition)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CurrentLocation)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Material)
+            </td>
+            <td>
+                <a asp-action="ItemEdit" asp-route-id="@item.ItemId">Edit</a> |
+                <a asp-action="ItemDetails" asp-route-id="@item.ItemId">Details</a> |
+                <a asp-action="ItemDelete" asp-route-id="@item.ItemId">Delete</a> |
+                <a asp-action="ItemAddToFavourites" asp-route-id="@item.ItemId">Add To Favourites</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
