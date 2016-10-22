@@ -22,6 +22,7 @@
             <th>
                 @Html.DisplayNameFor(model => model.UserName)
             </th>
+
             <th></th>
         </tr>
     </thead>
@@ -41,7 +42,6 @@
                 <a asp-action="UserEdit" asp-route-id="@item.Id">Edit</a> |
                 <a asp-action="UserDetails" asp-route-id="@item.Id">Details</a> |
                 <a asp-action="UserDelete" asp-route-id="@item.Id">Delete</a> |
-                <a asp-controller="Account" asp-action="UpdateUserRole" asp-route-id="@item.Id">Update Role</a>
             </td>
         </tr>
 }

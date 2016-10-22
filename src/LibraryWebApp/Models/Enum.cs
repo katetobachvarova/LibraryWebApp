@@ -7,6 +7,8 @@ namespace LibraryWebApp.Models
 {
     public class Enum
     {
-        enum MovementType {Take, Return }
+        public enum MovementType {Take, Return }
+
+        public enum LibraryRoles { Admin, Librarian, RegUser}
     }
 }

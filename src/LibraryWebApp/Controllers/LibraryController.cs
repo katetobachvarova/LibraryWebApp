@@ -6,8 +6,6 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -30,6 +28,152 @@ namespace LibraryWebApp.Controllers
             _roleManager = roleManager;
             _authorizationService = authorizationService;
         }
+
+        #region Users
+        // GET: ApplicationUsers
+        //[Authorize(Roles = "Administrator, Librarian")]
+        //[Authorize(Roles = "SHIT")]
+        public async Task<IActionResult> UserIndex()
+        {
+            return View(await _context.Users.ToListAsync());
+        }
+
+        // GET: ApplicationUsers/Details/5
+        public async Task<IActionResult> UserDetails(string id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var applicationUser = await _context.Users.SingleOrDefaultAsync(m => m.Id == id);
+            var listroles = applicationUser.Roles;
+            var r = await _userManager.GetRolesAsync(applicationUser);
+            SelectList UserRoles = new SelectList(r);
+            ViewData["UserRoles"] = UserRoles;
+
+            if (applicationUser == null)
+            {
+                return NotFound();
+            }
+
+            return View(applicationUser);
+        }
+
+        // GET: ApplicationUsers/Edit/5
+        public async Task<IActionResult> UserEdit(string id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var applicationUser = await _context.Users.SingleOrDefaultAsync(m => m.Id == id);
+            if (applicationUser == null)
+            {
+                return NotFound();
+            }
+
+            var listroles = System.Enum.GetValues(typeof(Models.Enum.LibraryRoles)).OfType<Models.Enum.LibraryRoles>();
+            var r = await _userManager.GetRolesAsync(applicationUser);
+            var sel = listroles.Where(e => e.ToString() == r.FirstOrDefault());
+
+            SelectList UserRoles = new SelectList(listroles, sel.FirstOrDefault() );
+            ViewData["UserRoles"] = UserRoles;
+            return View(applicationUser);
+        }
+
+        // POST: ApplicationUsers/Edit/5
+        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
+        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UserEdit(string id, string Role, [Bind("Id,AccessFailedCount,ConcurrencyStamp,Confirmed,Email,EmailConfirmed,LockoutEnabled,LockoutEnd,NormalizedEmail,NormalizedUserName,PasswordHash,PhoneNumber,PhoneNumberConfirmed,SecurityStamp,TwoFactorEnabled,UserName")] ApplicationUser applicationUser)
+        {
+            if (id != applicationUser.Id)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                   var currentrole = await _userManager.GetRolesAsync(applicationUser);
+                    if (!currentrole.Where(e => e == Role).Any())
+                    {
+
+                        var newRole = new IdentityUserRole<string>();
+                        newRole.RoleId = _context.Roles.Where(e => e.Name == Role)?.FirstOrDefault()?.Id;
+                        newRole.UserId = applicationUser.Id;
+                        _context.UserRoles.Add(newRole);
+                        _context.SaveChanges();
+                    }
+
+
+                    // applicationUser.Roles.Add(role);
+                    
+
+                    _context.Update(applicationUser);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!ApplicationUserExists(applicationUser.Id))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                var roleToRemove = await _userManager.GetRolesAsync(applicationUser);
+                foreach (var item in roleToRemove.Where(e => e != Role))
+                {
+                    await _userManager.RemoveFromRoleAsync(applicationUser, item);
+                }
+                return RedirectToAction("UserIndex");
+            }
+            return View(applicationUser);
+        }
+
+        // GET: ApplicationUsers/Delete/5
+        public async Task<IActionResult> UserDelete(string id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var applicationUser = await _context.Users.SingleOrDefaultAsync(m => m.Id == id);
+            if (applicationUser == null)
+            {
+                return NotFound();
+            }
+
+            return View(applicationUser);
+        }
+
+        // POST: ApplicationUsers/Delete/5
+        [HttpPost, ActionName("UserDelete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UserDeleteConfirmed(string id)
+        {
+            var applicationUser = await _context.Users.SingleOrDefaultAsync(m => m.Id == id);
+            _context.Users.Remove(applicationUser);
+            await _context.SaveChangesAsync();
+            return RedirectToAction("UserIndex");
+        }
+
+        private bool ApplicationUserExists(string id)
+        {
+            return _context.Users.Any(e => e.Id == id);
+        }
+
+
+        #endregion
+
 
         #region Sections
         // GET: Sections

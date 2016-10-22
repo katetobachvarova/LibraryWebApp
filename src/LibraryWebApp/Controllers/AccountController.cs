@@ -11,6 +11,8 @@ using Microsoft.Extensions.Logging;
 using LibraryWebApp.Models;
 using LibraryWebApp.Models.AccountViewModels;
 using LibraryWebApp.Services;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using LibraryWebApp.Data;
 
 namespace LibraryWebApp.Controllers
 {
@@ -22,19 +24,22 @@ namespace LibraryWebApp.Controllers
         private readonly IEmailSender _emailSender;
         private readonly ISmsSender _smsSender;
         private readonly ILogger _logger;
+        private readonly ApplicationDbContext _context;
 
         public AccountController(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
             IEmailSender emailSender,
             ISmsSender smsSender,
-            ILoggerFactory loggerFactory)
+            ILoggerFactory loggerFactory,
+            ApplicationDbContext context)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _emailSender = emailSender;
             _smsSender = smsSender;
             _logger = loggerFactory.CreateLogger<AccountController>();
+            _context = context;
         }
 
         //
@@ -461,6 +466,67 @@ namespace LibraryWebApp.Controllers
             {
                 return RedirectToAction(nameof(HomeController.Index), "Home");
             }
+        }
+
+        #endregion
+
+        #region Admin
+
+
+        // POST: /Account/RegisterUserByAdmin
+        [HttpPost]
+        //[Authorize(Roles = "Admin")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RegisterUserByAdmin(RegisterByAdminViewModel model, string returnUrl = null)
+        {
+            ViewData["ReturnUrl"] = returnUrl;
+            if (ModelState.IsValid)
+            {
+                var user = new ApplicationUser { UserName = model.Email, Email = model.Email, Confirmed = model.Confirmed };
+                var result = await _userManager.CreateAsync(user, model.Password);
+
+                if (result.Succeeded)
+                {
+                    var r = await _userManager.FindByEmailAsync(model.Email);
+                    var role = new IdentityUserRole<string>();
+                    role.RoleId = GetRoleId(model.Role);
+                    role.UserId = r.Id;
+                    r.Roles.Add(role);
+                    _context.UserRoles.Add(role);
+                    _context.SaveChanges();
+                    // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=532713
+                    // Send an email with this link
+                    //var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                    //var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: HttpContext.Request.Scheme);
+                    //await _emailSender.SendEmailAsync(model.Email, "Confirm your account",
+                    //    $"Please confirm your account by clicking this link: <a href='{callbackUrl}'>link</a>");
+                    //await _signInManager.SignInAsync(user, isPersistent: false);
+                    _logger.LogInformation(3, "Admin created a new account with password.");
+                    return RedirectToLocal(returnUrl);
+                }
+                AddErrors(result);
+            }
+
+            // If we got this far, something failed, redisplay form
+            return View(model);
+        }
+
+        // GET: /Account/RegisterUserByAdmin
+        [HttpGet]
+        //[Authorize(Roles = "Admin")]
+        public  IActionResult RegisterUserByAdmin(string returnUrl = null)
+        {
+            ViewData["ReturnUrl"] = returnUrl;
+            var listroles = System.Enum.GetValues(typeof(Models.Enum.LibraryRoles)).OfType<Models.Enum.LibraryRoles>();
+            SelectList UserRoles = new SelectList(listroles);
+            ViewData["UserRoles"] = UserRoles;
+
+            return View();
+        }
+
+        private string GetRoleId(string role)
+        {
+            return _context.Roles.Where(e => e.Name == role)?.FirstOrDefault()?.Id;
         }
 
         #endregion

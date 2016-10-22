@@ -23,12 +23,6 @@
             @Html.DisplayFor(model => model.ConcurrencyStamp)
         </dd>
         <dt>
-            @Html.DisplayNameFor(model => model.Confirmed)
-        </dt>
-        <dd>
-            @Html.DisplayFor(model => model.Confirmed)
-        </dd>
-        <dt>
             @Html.DisplayNameFor(model => model.Email)
         </dt>
         <dd>
@@ -104,7 +98,13 @@
             @Html.DisplayNameFor(model => model.Roles)
         </dt>
         <dd>
-            @Html.DropDownList("Role", ViewData["UserRoles"] as SelectList, new { @class = "form-control" })
+            @Html.DropDownList("Roles", ViewData["UserRoles"] as SelectList, new { @class = "form-control" })
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Confirmed)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Confirmed)
         </dd>
     </dl>
 </div>
