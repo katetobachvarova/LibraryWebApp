@@ -10,6 +10,8 @@ namespace LibraryWebApp.Models
         public int FavouriteId { get; set; }
         public string Url { get; set; }
         public string Comment { get; set; }
+        public string ItemIndex { get; set; }
+
 
         //public int ItemId { get; set; }
         //public Item Item { get; set; }

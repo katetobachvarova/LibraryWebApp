@@ -35,6 +35,17 @@ namespace LibraryWebApp.Controllers
         //[Authorize(Roles = "SHIT")]
         public async Task<IActionResult> UserIndex()
         {
+            //var newrole = new IdentityRole("Admin");
+            //var newrole2 = new IdentityRole("Librarian");
+            //var newrole3 = new IdentityRole("RegUser");
+
+            //await _roleManager.SetRoleNameAsync(newrole, "Admin");
+            //await _roleManager.CreateAsync(newrole);
+            //await _roleManager.SetRoleNameAsync(newrole2, "Librarian");
+            //await _roleManager.CreateAsync(newrole2);
+            //await _roleManager.SetRoleNameAsync(newrole3, "RegUser");
+            //await _roleManager.CreateAsync(newrole3);
+
             return View(await _context.Users.ToListAsync());
         }
 
@@ -172,6 +183,143 @@ namespace LibraryWebApp.Controllers
         }
 
 
+        #endregion
+
+
+        #region Favourites
+
+        //GET: Favourites
+        public async Task<IActionResult> FavouriteIndex()
+        {
+            var appuser = await _userManager.FindByNameAsync(User.Identity.Name);
+            var appuserfav = _context.Favourite.Where(e => e.User.UserName == appuser.UserName);
+            return View(await appuserfav.ToListAsync());
+        }
+
+        // GET: Favourites/Details/5
+        public async Task<IActionResult> FavouriteDetails(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var favourite = await _context.Favourite.SingleOrDefaultAsync(m => m.FavouriteId == id);
+            if (favourite == null)
+            {
+                return NotFound();
+            }
+
+            return View(favourite);
+        }
+
+        // GET: Favourites/Create
+        public IActionResult FavouriteCreate()
+        {
+            return View();
+        }
+
+        // POST: Favourites/Create
+        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
+        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> FavouriteCreate([Bind("FavouriteId,ApplicationUserId,Comment,Url")] Favourite favourite)
+        {
+            if (ModelState.IsValid)
+            {
+                _context.Add(favourite);
+                await _context.SaveChangesAsync();
+                return RedirectToAction("Index");
+            }
+            return View(favourite);
+        }
+
+        // GET: Favourites/Edit/5
+        public async Task<IActionResult> FavouriteEdit(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var favourite = await _context.Favourite.SingleOrDefaultAsync(m => m.FavouriteId == id);
+            if (favourite == null)
+            {
+                return NotFound();
+            }
+            return View(favourite);
+        }
+
+        // POST: Favourites/Edit/5
+        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
+        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> FavouriteEdit(int id, [Bind("FavouriteId,ApplicationUserId,Comment,Url")] Favourite favourite)
+        {
+            if (id != favourite.FavouriteId)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _context.Update(favourite);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!FavouriteExists(favourite.FavouriteId))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                return RedirectToAction("Index");
+            }
+            return View(favourite);
+        }
+
+        // GET: Favourites/Delete/5
+        public async Task<IActionResult> FavouriteDelete(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var favourite = await _context.Favourite.SingleOrDefaultAsync(m => m.FavouriteId == id);
+            if (favourite == null)
+            {
+                return NotFound();
+            }
+
+            return View(favourite);
+        }
+
+        // POST: Favourites/Delete/5
+        [HttpPost, ActionName("FavouriteDelete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> FavouriteDeleteConfirmed(int id)
+        {
+            var favourite = await _context.Favourite.SingleOrDefaultAsync(m => m.FavouriteId == id);
+            _context.Favourite.Remove(favourite);
+            await _context.SaveChangesAsync();
+            return RedirectToAction("Index");
+
+
+        }
+
+        private bool FavouriteExists(int id)
+        {
+            return _context.Favourite.Any(e => e.FavouriteId == id);
+        }
         #endregion
 
 
@@ -630,12 +778,11 @@ namespace LibraryWebApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ItemAddToFavouritesConfirmed(int id)
         {
-
             var item = await _context.Items.SingleOrDefaultAsync(m => m.ItemId == id);
-            var currentUser = User.Identity.Name;
-            // _context.Users.First(e => e.Email == currentUser).Favourites.Add(new Favourite() { Url = "", Comment = ""});
-            string url = "Library/ItemIndex/" + item.ItemId;
-            return RedirectToAction("ItemIndex");
+            var appuser = await _userManager.FindByNameAsync(User.Identity.Name);
+            _context.Favourite.Add(new Favourite() { Comment = "My favourite", User = appuser, ItemIndex = id.ToString()});
+            _context.SaveChanges();
+            return RedirectToAction("FavouriteIndex");
 
         }
 
@@ -652,6 +799,8 @@ namespace LibraryWebApp.Controllers
         {
 
             var item = await _context.Items.SingleOrDefaultAsync(m => m.ItemId == id);
+            var titleName = _context.Titles.Where(e => e.TitleId == item.TitleId).FirstOrDefault().Name;
+            ViewData["TitleName"] = titleName;
             if (item == null)
             {
                 return NotFound();

@@ -14,6 +14,9 @@ namespace LibraryWebApp.Data
         public DbSet<Title> Titles { get; set; }
         public DbSet<Item> Items { get; set; }
         public DbSet<ItemMovement> ItemMovements { get; set; }
+        public DbSet<Favourite> Favourite { get; set; }
+
+
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)

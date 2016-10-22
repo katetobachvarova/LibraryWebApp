@@ -4,38 +4,33 @@
     ViewData["Title"] = "Index";
 }
 
-<h2>Index</h2>
+<h2>Favourites</h2>
 
-<p>
-    <a asp-action="ItemCreate">Create New</a>
-</p>
 <table class="table">
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.Url)
-            </th>
-            <th>
                 @Html.DisplayNameFor(model => model.Comment)
             </th>
-            
-            <th></th>
+            <th>
+                Link
+            </th>
         </tr>
     </thead>
     <tbody>
 @foreach (var item in Model) {
         <tr>
             <td>
-                @Html.DisplayFor(modelItem => item.Url)
+                @Html.DisplayFor(modelItem => item.Comment)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Comment)
+                <a asp-action="ItemDetails" asp-route-id="@item.ItemIndex">Link to Item</a>
             </td>
             
             <td>
-                <a asp-action="ItemEdit" asp-route-id="@item.FavouriteId">Edit</a> |
-                <a asp-action="ItemDetails" asp-route-id="@item.FavouriteId">Details</a> |
-                <a asp-action="ItemDelete" asp-route-id="@item.FavouriteId">Delete</a> |
+                <a asp-action="FavouriteEdit" asp-route-id="@item.FavouriteId">Edit</a> |
+                <a asp-action="FavouriteDetails" asp-route-id="@item.FavouriteId">Details</a> |
+                <a asp-action="FavouriteDelete" asp-route-id="@item.FavouriteId">Delete</a>
                
             </td>
         </tr>
