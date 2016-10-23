@@ -6,23 +6,26 @@
 
 <h2>Index</h2>
 
+@if (User.IsInRole("Admin") || User.IsInRole("Librarian"))
+{
 <p>
     <a asp-action="ItemCreate">Create New</a>
 </p>
+}
 <table class="table">
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.Title.Name)
+                Title
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Title.Section.Name)
+                Section
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.Condition)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.CurrentLocation)
+                Current Location
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.Material)
@@ -49,11 +52,17 @@
                 @Html.DisplayFor(modelItem => item.Material)
             </td>
             <td>
-                <a asp-action="ItemEdit" asp-route-id="@item.ItemId">Edit</a> |
-                <a asp-action="ItemDetails" asp-route-id="@item.ItemId">Details</a> |
-                <a asp-action="ItemDelete" asp-route-id="@item.ItemId">Delete</a> |
-                <a asp-action="ItemAddToFavourites" asp-route-id="@item.ItemId">Add To Favourites</a>|
-              
+
+                @if (User.IsInRole("Admin") || User.IsInRole("Librarian"))
+                {
+                <a asp-action="ItemEdit" asp-route-id="@item.ItemId">Edit |</a>
+                <a asp-action="ItemDetails" asp-route-id="@item.ItemId">Details |</a> 
+                <a asp-action="ItemDelete" asp-route-id="@item.ItemId">Delete |</a> 
+                }
+                @if (User.IsInRole("Admin") || User.IsInRole("Librarian") || User.IsInRole("RegUser"))
+                {
+                <a asp-action="ItemAddToFavourites" asp-route-id="@item.ItemId">Add To Favourites</a>
+                }
             </td>
         </tr>
 }

@@ -33,8 +33,7 @@ namespace LibraryWebApp.Controllers
 
         #region Users
         // GET: ApplicationUsers
-        //[Authorize(Roles = "Administrator, Librarian")]
-        //[Authorize(Roles = "SHIT")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UserIndex()
         {
             //var newrole = new IdentityRole("Admin");
@@ -52,6 +51,7 @@ namespace LibraryWebApp.Controllers
         }
 
         // GET: ApplicationUsers/Details/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UserDetails(string id)
         {
             if (id == null)
@@ -60,20 +60,19 @@ namespace LibraryWebApp.Controllers
             }
 
             var applicationUser = await _context.Users.SingleOrDefaultAsync(m => m.Id == id);
-            var listroles = applicationUser.Roles;
-            var r = await _userManager.GetRolesAsync(applicationUser);
-            SelectList UserRoles = new SelectList(r);
-            ViewData["UserRoles"] = UserRoles;
-
+            
             if (applicationUser == null)
             {
                 return NotFound();
             }
-
+            var r = await _userManager.GetRolesAsync(applicationUser);
+            SelectList UserRoles = new SelectList(r);
+            ViewData["UserRoles"] = UserRoles;
             return View(applicationUser);
         }
 
         // GET: ApplicationUsers/Edit/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UserEdit(string id)
         {
             if (id == null)
@@ -152,6 +151,7 @@ namespace LibraryWebApp.Controllers
         }
 
         // GET: ApplicationUsers/Delete/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UserDelete(string id)
         {
             if (id == null)
@@ -191,6 +191,7 @@ namespace LibraryWebApp.Controllers
         #region Favourites
 
         //GET: Favourites
+        [Authorize(Roles = "Admin, Librarian, RegUser")]
         public async Task<IActionResult> FavouriteIndex()
         {
             var appuser = await _userManager.FindByNameAsync(User.Identity.Name);
@@ -199,6 +200,7 @@ namespace LibraryWebApp.Controllers
         }
 
         // GET: Favourites/Details/5
+        [Authorize(Roles = "Admin, Librarian, RegUser")]
         public async Task<IActionResult> FavouriteDetails(int? id)
         {
             if (id == null)
@@ -216,6 +218,7 @@ namespace LibraryWebApp.Controllers
         }
 
         // GET: Favourites/Create
+        [Authorize(Roles = "Admin, Librarian, RegUser")]
         public IActionResult FavouriteCreate()
         {
             return View();
@@ -238,6 +241,7 @@ namespace LibraryWebApp.Controllers
         }
 
         // GET: Favourites/Edit/5
+        [Authorize(Roles = "Admin, Librarian, RegUser")]
         public async Task<IActionResult> FavouriteEdit(int? id)
         {
             if (id == null)
@@ -289,6 +293,7 @@ namespace LibraryWebApp.Controllers
         }
 
         // GET: Favourites/Delete/5
+        [Authorize(Roles = "Admin, Librarian, RegUser")]
         public async Task<IActionResult> FavouriteDelete(int? id)
         {
             if (id == null)
@@ -324,7 +329,9 @@ namespace LibraryWebApp.Controllers
         }
         #endregion
 
+        #region Item Movement
         // GET: ItemMovements
+        [Authorize(Roles = "Admin, Librarian")]
         public async Task<IActionResult> ItemMovementIndex()
         {
             var applicationDbContext = _context.ItemMovements.Include(i => i.Item).Include(e => e.Item.Title).Include(p => p.Librarian).Include(u =>u.User);
@@ -332,6 +339,7 @@ namespace LibraryWebApp.Controllers
         }
 
         // GET: ItemMovements/Details/5
+        [Authorize(Roles = "Admin, Librarian")]
         public async Task<IActionResult> ItemMovementDetails(int? id)
         {
             if (id == null)
@@ -357,6 +365,7 @@ namespace LibraryWebApp.Controllers
         }
 
         // GET: ItemMovements/Create
+        [Authorize(Roles = "Admin, Librarian")]
         public IActionResult ItemMovementCreate()
         {
             ViewData["ApplicationUserId"] = new SelectList(_userManager.Users.ToList(), "Id", "UserName");
@@ -397,6 +406,7 @@ namespace LibraryWebApp.Controllers
         }
 
         // GET: ItemMovements/Edit/5
+        [Authorize(Roles = "Admin, Librarian")]
         public async Task<IActionResult> ItemMovementEdit(int? id)
         {
             if (id == null)
@@ -480,6 +490,7 @@ namespace LibraryWebApp.Controllers
         }
 
         // GET: ItemMovements/Delete/5
+        [Authorize(Roles = "Admin, Librarian")]
         public async Task<IActionResult> ItemMovementDelete(int? id, bool? concurrencyError)
         {
             if (id == null)
@@ -549,6 +560,8 @@ namespace LibraryWebApp.Controllers
             return _context.ItemMovements.Any(e => e.ItemMovementId == id);
         }
 
+        #endregion
+
         #region Sections
         // GET: Sections
         public async Task<IActionResult> SectionIndex()
@@ -557,6 +570,7 @@ namespace LibraryWebApp.Controllers
         }
 
         // GET: Sections/Details/5
+        [Authorize(Roles = "Admin, Librarian")]
         public async Task<IActionResult> SectionDetails(int? id)
         {
             if (id == null)
@@ -574,6 +588,7 @@ namespace LibraryWebApp.Controllers
         }
 
         // GET: Sections/Create
+        [Authorize(Roles = "Admin, Librarian")]
         public IActionResult SectionCreate()
         {
             return View();
@@ -596,6 +611,7 @@ namespace LibraryWebApp.Controllers
         }
 
         // GET: Sections/Edit/5
+        [Authorize(Roles = "Admin, Librarian")]
         public async Task<IActionResult> SectionEdit(int? id)
         {
             if (id == null)
@@ -682,6 +698,7 @@ namespace LibraryWebApp.Controllers
         }
 
         // GET: Sections/Delete/5
+        [Authorize(Roles = "Admin, Librarian")]
         public async Task<IActionResult> SectionDelete(int? id, bool? concurrencyError)
         {
             if (id == null)
@@ -754,6 +771,7 @@ namespace LibraryWebApp.Controllers
         }
 
         // GET: Titles/Details/5
+        [Authorize(Roles = "Admin, Librarian")]
         public async Task<IActionResult> TitleDetails(int? id)
         {
             if (id == null)
@@ -771,6 +789,7 @@ namespace LibraryWebApp.Controllers
         }
 
         // GET: Titles/Create
+        [Authorize(Roles = "Admin, Librarian")]
         public IActionResult TitleCreate()
         {
             ViewData["SectionId"] = new SelectList(_context.Sections, "SectionId", "Name");
@@ -795,6 +814,7 @@ namespace LibraryWebApp.Controllers
         }
 
         // GET: Titles/Edit/5
+        [Authorize(Roles = "Admin, Librarian")]
         public async Task<IActionResult> TitleEdit(int? id)
         {
             if (id == null)
@@ -921,6 +941,7 @@ namespace LibraryWebApp.Controllers
 
         }
 
+        [Authorize(Roles = "Admin, Librarian")]
         public async Task<IActionResult> TitleDelete(int? id, bool? concurrencyError)
         {
             if (id == null)
@@ -983,9 +1004,10 @@ namespace LibraryWebApp.Controllers
         #endregion
 
         #region Items
-       
 
 
+
+        [Authorize(Roles = "Admin, Librarian, RegUser")]
         public async Task<IActionResult> ItemAddToFavourites(int? id)
         {
             if (id == null)
@@ -1023,6 +1045,7 @@ namespace LibraryWebApp.Controllers
         }
 
         // GET: Items/Details/5
+        [Authorize(Roles = "Admin, Librarian, RegUser")]
         public async Task<IActionResult> ItemDetails(int? id)
         {
 
@@ -1038,6 +1061,7 @@ namespace LibraryWebApp.Controllers
         }
 
         // GET: Items/Create
+        [Authorize(Roles = "Admin, Librarian")]
         public IActionResult ItemCreate()
         {
             ViewData["TitleId"] = new SelectList(_context.Titles, "TitleId", "Name");
@@ -1062,6 +1086,7 @@ namespace LibraryWebApp.Controllers
         }
 
         // GET: Items/Edit/5
+        [Authorize(Roles = "Admin, Librarian")]
         public async Task<IActionResult> ItemEdit(int? id)
         {
             if (id == null)
@@ -1164,6 +1189,7 @@ namespace LibraryWebApp.Controllers
         }
 
         // GET: Items/Delete/5
+        [Authorize(Roles = "Admin, Librarian")]
         public async Task<IActionResult> ItemDelete(int? id, bool? concurrencyError)
         {
             if (id == null)

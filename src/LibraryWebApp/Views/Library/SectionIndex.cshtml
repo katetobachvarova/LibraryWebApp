@@ -6,9 +6,12 @@
 
 <h2>Index</h2>
 
+@if (User.IsInRole("Admin") || User.IsInRole("Librarian"))
+{
 <p>
     <a asp-action="SectionCreate">Create New</a>
 </p>
+}
 <table class="table">
     <thead>
         <tr>
@@ -31,9 +34,12 @@
                 @Html.DisplayFor(modelItem => item.Name)
             </td>
             <td>
-                <a asp-action="SectionEdit" asp-route-id="@item.SectionId">Edit</a> |
-                <a asp-action="SectionDetails" asp-route-id="@item.SectionId">Details</a> |
+                @if (User.IsInRole("Admin") || User.IsInRole("Librarian"))
+                {
+                <a asp-action="SectionEdit" asp-route-id="@item.SectionId">Edit |</a>
+                <a asp-action="SectionDetails" asp-route-id="@item.SectionId">Details |</a>
                 <a asp-action="SectionDelete" asp-route-id="@item.SectionId">Delete</a>
+                }
             </td>
         </tr>
 }

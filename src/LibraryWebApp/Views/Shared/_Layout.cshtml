@@ -34,15 +34,18 @@
                     <li><a asp-area="" asp-controller="Library" asp-action="SectionIndex">Sections</a></li>
                     <li><a asp-area="" asp-controller="Library" asp-action="TitleIndex">Titles</a></li>
                     <li><a asp-area="" asp-controller="Library" asp-action="ItemIndex">Library Items</a></li>
+                    @if (User.IsInRole("Admin") || User.IsInRole("Librarian") || User.IsInRole("RegUser"))
+                    {
                     <li><a asp-area="" asp-controller="Library" asp-action="FavouriteIndex">Favourites</a></li>
+                    }
+                    @if (User.IsInRole("Admin") || User.IsInRole("Librarian"))
+                    {
                     <li><a asp-area="" asp-controller="Library" asp-action="ItemMovementIndex">Item Movement</a></li>
-                    
-                    
-                    @*@if (User.IsInRole("Admin"))
-                    {*@
-
+                    }
+                   @if (User.IsInRole("Admin"))
+                   {
                         <li><a asp-area="" asp-controller="Library" asp-action="UserIndex">Users</a></li>
-                    @*}*@
+                   }
                     <li><a asp-area="" asp-controller="Home" asp-action="Index">Home</a></li>
                     <li><a asp-area="" asp-controller="Home" asp-action="About">About</a></li>
                     <li><a asp-area="" asp-controller="Home" asp-action="Contact">Contact</a></li>
