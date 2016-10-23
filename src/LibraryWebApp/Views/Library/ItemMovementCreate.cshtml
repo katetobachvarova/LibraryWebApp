@@ -1,0 +1,70 @@
+@model LibraryWebApp.Models.ItemMovement
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<h2>Create</h2>
+
+<form asp-action="ItemMovementCreate">
+    <div class="form-horizontal">
+        <h4>ItemMovement</h4>
+        <hr />
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div class="form-group">
+            <label asp-for="ApplicationUserId" class="col-md-2 control-label"></label>
+            <div class="col-md-10">
+                <select asp-for="ApplicationUserId" class="form-control" asp-items="ViewBag.ApplicationUserId"></select>
+                <span asp-validation-for="ApplicationUserId" class="text-danger" />
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label asp-for="Condition" class="col-md-2 control-label"></label>
+            <div class="col-md-10">
+                <input asp-for="Condition" class="form-control" />
+                <span asp-validation-for="Condition" class="text-danger" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label asp-for="Date" class="col-md-2 control-label"></label>
+            <div class="col-md-10">
+                @Html.TextBoxFor(model => model.Date, new { type = "date" })
+                <span asp-validation-for="Date" class="text-danger" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label asp-for="Deadline" class="col-md-2 control-label"></label>
+            <div class="col-md-10">
+                @Html.TextBoxFor(model => model.Deadline, new { type = "date" })
+                <span asp-validation-for="Deadline" class="text-danger" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label asp-for="ItemId" class="col-md-2 control-label"></label>
+            <div class="col-md-10">
+                <select asp-for="ItemId" class ="form-control" asp-items="ViewBag.ItemId"></select>
+                <span asp-validation-for="ItemId" class="text-danger" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label asp-for="MovementType" class="col-md-2 control-label"></label>
+            <div class="col-md-10">
+                <select asp-for="MovementType" class="form-control" asp-items="ViewBag.MovType"></select>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Create" class="btn btn-default" />
+            </div>
+        </div>
+    </div>
+</form>
+
+<div>
+    <a asp-action="ItemMovementIndex">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

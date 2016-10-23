@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -322,6 +324,230 @@ namespace LibraryWebApp.Controllers
         }
         #endregion
 
+        // GET: ItemMovements
+        public async Task<IActionResult> ItemMovementIndex()
+        {
+            var applicationDbContext = _context.ItemMovements.Include(i => i.Item).Include(e => e.Item.Title).Include(p => p.Librarian).Include(u =>u.User);
+            return View(await applicationDbContext.ToListAsync());
+        }
+
+        // GET: ItemMovements/Details/5
+        public async Task<IActionResult> ItemMovementDetails(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var itemMovement = await _context.ItemMovements.SingleOrDefaultAsync(m => m.ItemMovementId == id);
+            ViewData["ApplicationUserId"] = _context.Users.Where(e => e.Id == itemMovement.ApplicationUserId).FirstOrDefault().UserName;
+            var titleId = _context.Items.Where(e => e.ItemId == itemMovement.ItemId).FirstOrDefault().TitleId;
+            ViewData["ItemId"] = _context.Items.Where(e => e.ItemId == itemMovement.ItemId).FirstOrDefault().ItemId;
+            ViewData["TitleName"] = _context.Titles.Where(e => e.TitleId == titleId).FirstOrDefault().Name;
+
+            ViewData["LibrarianId"] = _context.Users.Where(e => e.Id == itemMovement.LibrarianId).FirstOrDefault().UserName;
+
+
+            if (itemMovement == null)
+            {
+                return NotFound();
+            }
+
+            return View(itemMovement);
+        }
+
+        // GET: ItemMovements/Create
+        public IActionResult ItemMovementCreate()
+        {
+            ViewData["ApplicationUserId"] = new SelectList(_userManager.Users.ToList(), "Id", "UserName");
+            //var titleIds = _context.Items.Select(e => e.TitleId);
+            //var titleNames = new List<string>();
+            //foreach (var item in titleIds)
+            //{
+            //    titleNames.Add(_context.Titles.Where(e => e.TitleId == item).First().Name);
+            //}
+            //ViewData["ItemId"] = new SelectList(titleNames);
+
+            ViewData["ItemId"] = new SelectList(_context.Items.Include(e => e.Title), "ItemId", "ItemId");
+            var listMovType = System.Enum.GetValues(typeof(Models.Enum.MovementType)).OfType<Models.Enum.MovementType>();
+            ViewData["MovType"] = new SelectList(listMovType);
+
+            return View();
+        }
+
+        // POST: ItemMovements/Create
+        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
+        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ItemMovementCreate([Bind("ItemMovementId,ApplicationUserId,Condition,Date,Deadline,ItemId,LibrarianId,MovementType,RowVersion")] ItemMovement itemMovement)
+        {
+            if (ModelState.IsValid)
+            {
+                var librarian = _context.Users.Where(e => e.UserName == User.Identity.Name).FirstOrDefault();
+                itemMovement.LibrarianId = librarian.Id;
+                _context.Add(itemMovement);
+                await _context.SaveChangesAsync();
+                return RedirectToAction("ItemMovementIndex");
+            }
+
+            ViewData["ApplicationUserId"] = new SelectList(_userManager.Users.ToList(), "Id", "UserName", itemMovement.ApplicationUserId);
+            ViewData["ItemId"] = new SelectList(_context.Items, "ItemId", "Name", itemMovement.ItemId);
+            return View(itemMovement);
+        }
+
+        // GET: ItemMovements/Edit/5
+        public async Task<IActionResult> ItemMovementEdit(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var itemMovement = await _context.ItemMovements.SingleOrDefaultAsync(m => m.ItemMovementId == id);
+            if (itemMovement == null)
+            {
+                return NotFound();
+            }
+            ViewData["ItemId"] = new SelectList(_context.Items, "ItemId", "ItemId", itemMovement.ItemId);
+            return View(itemMovement);
+        }
+
+        // POST: ItemMovements/Edit/5
+        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
+        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ItemMovementEdit(int id, byte[] rowVersion, [Bind("ItemMovementId,ApplicationUserId,Condition,Date,Deadline,ItemId,LibrarianId,MovementType,RowVersion")] ItemMovement itemMovement)
+        {
+            if (id != itemMovement.ItemMovementId)
+            {
+                return NotFound();
+            }
+            var itemMov = await _context.ItemMovements.SingleOrDefaultAsync(m => m.ItemMovementId == id);
+            if (itemMov == null)
+            {
+                ItemMovement deletedItem = new ItemMovement();
+                await TryUpdateModelAsync(deletedItem);
+                ModelState.AddModelError(string.Empty,
+                    "Unable to save changes. The item movement was deleted by another user.");
+                return View(deletedItem);
+            }
+            _context.Entry(itemMov).Property("RowVersion").OriginalValue = rowVersion;
+
+            if (await TryUpdateModelAsync<ItemMovement>(
+                itemMov,
+                "",
+                s => s.Deadline))
+            {
+                try
+                {
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction("ItemMovementIndex");
+                }
+                catch (DbUpdateConcurrencyException ex)
+                {
+                    var exceptionEntry = ex.Entries.Single();
+                    // Using a NoTracking query means we get the entity but it is not tracked by the context
+                    // and will not be merged with existing entities in the context.
+                    var databaseEntity = await _context.ItemMovements
+                        .AsNoTracking()
+                        .SingleAsync(d => d.ItemMovementId == ((ItemMovement)exceptionEntry.Entity).ItemMovementId);
+
+                    var databaseEntry = _context.Entry(databaseEntity);
+
+
+                    var databaseDeadline = (DateTime)databaseEntry.Property("Deadline").CurrentValue;
+                    var proposedDeadline = (DateTime)exceptionEntry.Property("Deadline").CurrentValue;
+                    if (databaseDeadline != proposedDeadline)
+                    {
+                        ModelState.AddModelError("Deadline", $"Current value: {databaseDeadline}");
+                    }
+                    
+                    ModelState.AddModelError(string.Empty, "The record you attempted to edit "
+                    + "was modified by another user after you got the original value. The "
+                    + "edit operation was canceled and the current values in the database "
+                    + "have been displayed. If you still want to edit this record, click "
+                    + "the Save button again. Otherwise click the Back to List hyperlink.");
+                    itemMov.RowVersion = (byte[])databaseEntry.Property("RowVersion").CurrentValue;
+                    ModelState.Remove("RowVersion");
+                }
+            }
+
+
+            ViewData["ItemId"] = new SelectList(_context.Items, "ItemId", "ItemId", itemMovement.ItemId);
+            return View(itemMovement);
+        }
+
+        // GET: ItemMovements/Delete/5
+        public async Task<IActionResult> ItemMovementDelete(int? id, bool? concurrencyError)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+
+            var itemMovement = await _context.ItemMovements.AsNoTracking().SingleOrDefaultAsync(m => m.ItemMovementId == id);
+            if (itemMovement == null)
+            {
+                if (concurrencyError.GetValueOrDefault())
+                {
+                    return RedirectToAction("ItemMovementIndex");
+                }
+                return NotFound();
+            }
+            if (concurrencyError.GetValueOrDefault())
+            {
+                ViewData["ConcurrencyErrorMessage"] = "The record you attempted to delete "
+                    + "was modified by another user after you got the original values. "
+                    + "The delete operation was canceled and the current values in the "
+                    + "database have been displayed. If you still want to delete this "
+                    + "record, click the Delete button again. Otherwise "
+                    + "click the Back to List hyperlink.";
+            }
+            ViewData["ApplicationUserId"] = _context.Users.Where(e => e.Id == itemMovement.ApplicationUserId).FirstOrDefault().UserName;
+            var titleId = _context.Items.Where(e => e.ItemId == itemMovement.ItemId).FirstOrDefault().TitleId;
+            ViewData["ItemId"] = _context.Items.Where(e => e.ItemId == itemMovement.ItemId).FirstOrDefault().ItemId;
+            ViewData["TitleName"] = _context.Titles.Where(e => e.TitleId == titleId).FirstOrDefault().Name;
+
+            ViewData["LibrarianId"] = _context.Users.Where(e => e.Id == itemMovement.LibrarianId).FirstOrDefault().UserName;
+
+            return View(itemMovement);
+        }
+
+        // POST: ItemMovements/Delete/5
+        [HttpPost, ActionName("ItemMovementDelete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ItemMovementDeleteConfirmed(int id)
+        {
+            //var itemMovement = await _context.ItemMovements.SingleOrDefaultAsync(m => m.ItemMovementId == id);
+            //_context.ItemMovements.Remove(itemMovement);
+            //await _context.SaveChangesAsync();
+            //return RedirectToAction("ItemMovementIndex");
+
+
+            try
+            {
+                if (await _context.ItemMovements.AnyAsync(m => m.ItemMovementId == id))
+                {
+                    var itemMovement = await _context.ItemMovements.SingleOrDefaultAsync(m => m.ItemMovementId == id);
+                    _context.ItemMovements.Remove(itemMovement);
+                    await _context.SaveChangesAsync();
+                }
+                return RedirectToAction("ItemMovementIndex");
+            }
+            catch (DbUpdateConcurrencyException /* ex */)
+            {
+                //Log the error (uncomment ex variable name and write a log.)
+                return RedirectToAction("ItemMovementDelete", new { id, concurrencyError = true });
+            }
+        }
+
+        private bool ItemMovementExists(int id)
+        {
+            return _context.ItemMovements.Any(e => e.ItemMovementId == id);
+        }
 
         #region Sections
         // GET: Sections
@@ -757,6 +983,8 @@ namespace LibraryWebApp.Controllers
         #endregion
 
         #region Items
+       
+
 
         public async Task<IActionResult> ItemAddToFavourites(int? id)
         {
@@ -857,32 +1085,6 @@ namespace LibraryWebApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ItemEdit(int id, byte[] rowVersion, [Bind("ItemId,Condition,CurrentLocation,Material,TitleId")] Item itemb)
         {
-            //if (id != item.ItemId)
-            //{
-            //    return NotFound();
-            //}
-
-            //if (ModelState.IsValid)
-            //{
-            //    try
-            //    {
-            //        _context.Update(item);
-            //        await _context.SaveChangesAsync();
-            //    }
-            //    catch (DbUpdateConcurrencyException)
-            //    {
-            //        if (!ItemExists(item.ItemId))
-            //        {
-            //            return NotFound();
-            //        }
-            //        else
-            //        {
-            //            throw;
-            //        }
-            //    }
-            //    return RedirectToAction("ItemIndex");
-            //}
-
             if (id != itemb.ItemId)
             {
                 return NotFound();

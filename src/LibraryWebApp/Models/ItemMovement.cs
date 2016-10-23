@@ -20,10 +20,10 @@ namespace LibraryWebApp.Models
         public int ItemId { get; set; }
         public Item Item { get; set; }
 
-        public int ApplicationUserId { get; set; }
+        public string ApplicationUserId { get; set; }
         public ApplicationUser User { get; set; }
 
-        public int LibrarianId { get; set; }
+        public string LibrarianId { get; set; }
         public ApplicationUser Librarian { get; set; }
 
         [Timestamp]

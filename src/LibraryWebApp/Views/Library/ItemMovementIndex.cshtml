@@ -1,0 +1,77 @@
+@model IEnumerable<LibraryWebApp.Models.ItemMovement>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h2>Index</h2>
+
+<p>
+    <a asp-action="ItemMovementCreate">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                User
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Condition)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Date)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Deadline)
+            </th>
+            <th>
+               Librarian
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.MovementType)
+            </th>
+            <th>
+                Title
+            </th>
+            <th>
+                Item Id
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.User.UserName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Condition)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Date)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Deadline)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Librarian.UserName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.MovementType)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Item.Title.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Item.ItemId)
+            </td>
+            <td>
+                <a asp-action="ItemMovementEdit" asp-route-id="@item.ItemMovementId">Edit</a> |
+                <a asp-action="ItemMovementDetails" asp-route-id="@item.ItemMovementId">Details</a> |
+                <a asp-action="ItemMovementDelete" asp-route-id="@item.ItemMovementId">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
