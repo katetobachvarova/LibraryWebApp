@@ -36,17 +36,7 @@ namespace LibraryWebApp.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UserIndex()
         {
-            //var newrole = new IdentityRole("Admin");
-            //var newrole2 = new IdentityRole("Librarian");
-            //var newrole3 = new IdentityRole("RegUser");
-
-            //await _roleManager.SetRoleNameAsync(newrole, "Admin");
-            //await _roleManager.CreateAsync(newrole);
-            //await _roleManager.SetRoleNameAsync(newrole2, "Librarian");
-            //await _roleManager.CreateAsync(newrole2);
-            //await _roleManager.SetRoleNameAsync(newrole3, "RegUser");
-            //await _roleManager.CreateAsync(newrole3);
-
+           
             return View(await _context.Users.ToListAsync());
         }
 

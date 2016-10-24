@@ -96,6 +96,8 @@ namespace LibraryWebApp
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
+            DbContextSeedData.Seed(app);
+
         }
     }
 }
