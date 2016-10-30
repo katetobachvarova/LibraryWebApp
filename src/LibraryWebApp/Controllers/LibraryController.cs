@@ -252,8 +252,10 @@ namespace LibraryWebApp.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> FavouriteEdit(int id, [Bind("FavouriteId,ApplicationUserId,Comment,Url")] Favourite favourite)
+        public async Task<IActionResult> FavouriteEdit(int id, [Bind("Comment")] Favourite fav)
         {
+            var favourite = await _context.Favourite.SingleOrDefaultAsync(m => m.FavouriteId == id);
+
             if (id != favourite.FavouriteId)
             {
                 return NotFound();
@@ -263,6 +265,7 @@ namespace LibraryWebApp.Controllers
             {
                 try
                 {
+                    favourite.Comment = fav?.Comment;
                     _context.Update(favourite);
                     await _context.SaveChangesAsync();
                 }
@@ -277,7 +280,7 @@ namespace LibraryWebApp.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction("Index");
+                return RedirectToAction("FavouriteIndex");
             }
             return View(favourite);
         }
@@ -308,7 +311,7 @@ namespace LibraryWebApp.Controllers
             var favourite = await _context.Favourite.SingleOrDefaultAsync(m => m.FavouriteId == id);
             _context.Favourite.Remove(favourite);
             await _context.SaveChangesAsync();
-            return RedirectToAction("Index");
+            return RedirectToAction("FavouriteIndex");
 
 
         }
@@ -1006,21 +1009,22 @@ namespace LibraryWebApp.Controllers
             }
 
             var item = await _context.Items.SingleOrDefaultAsync(m => m.ItemId == id);
+            var fav = new FavouriteViewModel();
             if (item == null)
             {
                 return NotFound();
             }
 
-            return View(item);
+            return View(fav);
         }
 
         [HttpPost, ActionName("ItemAddToFavourites")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ItemAddToFavouritesConfirmed(int id)
+        public async Task<IActionResult> ItemAddToFavouritesConfirmed(int id, FavouriteViewModel f)
         {
             var item = await _context.Items.SingleOrDefaultAsync(m => m.ItemId == id);
             var appuser = await _userManager.FindByNameAsync(User.Identity.Name);
-            _context.Favourite.Add(new Favourite() { Comment = "My favourite", User = appuser, ItemIndex = id.ToString()});
+            _context.Favourite.Add(new Favourite() { Comment = f?.Comment, User = appuser, ItemIndex = id.ToString()});
             _context.SaveChanges();
             return RedirectToAction("FavouriteIndex");
 
