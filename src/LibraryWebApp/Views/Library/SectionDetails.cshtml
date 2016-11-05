@@ -1,4 +1,4 @@
-@model LibraryWebApp.Models.Section
+@model LibraryWebApp.Models.LibraryViewModels.SectionViewModel
 
 @{
     ViewData["Title"] = "Details";
@@ -11,20 +11,20 @@
     <hr />
     <dl class="dl-horizontal">
         <dt>
-            @Html.DisplayNameFor(model => model.Description)
+            @Html.DisplayNameFor(model => model.Section.Description)
         </dt>
         <dd>
-            @Html.DisplayFor(model => model.Description)
+            @Html.DisplayFor(model => model.Section.Description)
         </dd>
         <dt>
-            @Html.DisplayNameFor(model => model.Name)
+            @Html.DisplayNameFor(model => model.Section.Name)
         </dt>
         <dd>
-            @Html.DisplayFor(model => model.Name)
+            @Html.DisplayFor(model => model.Section.Name)
         </dd>
     </dl>
 </div>
 <div>
-    <a asp-action="SectionEdit" asp-route-id="@Model.SectionId">Edit</a> |
+    <a asp-action="SectionEdit" asp-route-id="@Model.Section.SectionId">Edit</a> |
     <a asp-action="SectionIndex">Back to List</a>
 </div>

@@ -1,4 +1,4 @@
-@model IEnumerable<LibraryWebApp.Models.Favourite>
+@model IEnumerable<LibraryWebApp.Models.LibraryViewModels.FavouriteViewModel>
 
 @{
     ViewData["Title"] = "Index";
@@ -10,7 +10,7 @@
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.Comment)
+                @Html.DisplayNameFor(model => model.Favourite.Comment)
             </th>
             <th>
                 Link
@@ -21,17 +21,16 @@
 @foreach (var item in Model) {
         <tr>
             <td>
-                @Html.DisplayFor(modelItem => item.Comment)
+                @Html.DisplayFor(modelItem => item.Favourite.Comment)
             </td>
             <td>
-                <a asp-action="ItemDetails" asp-route-id="@item.ItemIndex">Link to Item</a>
+                <a asp-action="ItemDetails" asp-route-id="@item.Favourite.ItemIndex">Link to Item</a>
             </td>
             
             <td>
-                <a asp-action="FavouriteEdit" asp-route-id="@item.FavouriteId">Edit</a> |
-                <a asp-action="FavouriteDetails" asp-route-id="@item.FavouriteId">Details</a> |
-                <a asp-action="FavouriteDelete" asp-route-id="@item.FavouriteId">Delete</a>
-               
+                <a asp-action="FavouriteEdit" asp-route-id="@item.Favourite.FavouriteId">Edit</a> |
+                <a asp-action="FavouriteDetails" asp-route-id="@item.Favourite.FavouriteId">Details</a> |
+                <a asp-action="FavouriteDelete" asp-route-id="@item.Favourite.FavouriteId">Delete</a>
             </td>
         </tr>
 }

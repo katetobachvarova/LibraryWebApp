@@ -1,4 +1,4 @@
-@model IEnumerable<LibraryWebApp.Models.ItemMovement>
+@model IEnumerable<LibraryWebApp.Models.LibraryViewModels.ItemMovementViewModel>
 
 @{
     ViewData["Title"] = "Index";
@@ -16,19 +16,19 @@
                 User
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Condition)
+                @Html.DisplayNameFor(model => model.ItemMovement.Condition)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Date)
+                @Html.DisplayNameFor(model => model.ItemMovement.Date)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Deadline)
+                @Html.DisplayNameFor(model => model.ItemMovement.Deadline)
             </th>
             <th>
                Librarian
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.MovementType)
+                @Html.DisplayNameFor(model => model.ItemMovement.MovementType)
             </th>
             <th>
                 Title
@@ -43,33 +43,33 @@
 @foreach (var item in Model) {
         <tr>
             <td>
-                @Html.DisplayFor(modelItem => item.User.UserName)
+                @Html.DisplayFor(modelItem => item.ItemMovement.User.UserName)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Condition)
+                @Html.DisplayFor(modelItem => item.ItemMovement.Condition)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Date)
+                @Html.DisplayFor(modelItem => item.ItemMovement.Date)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Deadline)
+                @Html.DisplayFor(modelItem => item.ItemMovement.Deadline)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Librarian.UserName)
+                @Html.DisplayFor(modelItem => item.ItemMovement.Librarian.UserName)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.MovementType)
+                @Html.DisplayFor(modelItem => item.ItemMovement.MovementType)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Item.Title.Name)
+                @Html.DisplayFor(modelItem => item.ItemMovement.Item.Title.Name)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Item.ItemId)
+                @Html.DisplayFor(modelItem => item.ItemMovement.Item.ItemId)
             </td>
             <td>
-                <a asp-action="ItemMovementEdit" asp-route-id="@item.ItemMovementId">Edit</a> |
-                <a asp-action="ItemMovementDetails" asp-route-id="@item.ItemMovementId">Details</a> |
-                <a asp-action="ItemMovementDelete" asp-route-id="@item.ItemMovementId">Delete</a>
+                <a asp-action="ItemMovementEdit" asp-route-id="@item.ItemMovement.ItemMovementId">Edit</a> |
+                <a asp-action="ItemMovementDetails" asp-route-id="@item.ItemMovement.ItemMovementId">Details</a> |
+                <a asp-action="ItemMovementDelete" asp-route-id="@item.ItemMovement.ItemMovementId">Delete</a>
             </td>
         </tr>
 }

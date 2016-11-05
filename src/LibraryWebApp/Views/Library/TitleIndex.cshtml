@@ -1,4 +1,4 @@
-@model IEnumerable<LibraryWebApp.Models.Title>
+@model IEnumerable<LibraryWebApp.Models.LibraryViewModels.TitleViewModel>
 
 @{
     ViewData["Title"] = "Index";
@@ -16,28 +16,28 @@
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.Annotation)
+                @Html.DisplayNameFor(model => model.Title.Annotation)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Author)
+                @Html.DisplayNameFor(model => model.Title.Author)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.ISBN)
+                @Html.DisplayNameFor(model => model.Title.ISBN)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Name)
+                @Html.DisplayNameFor(model => model.Title.Name)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Publisher)
+                @Html.DisplayNameFor(model => model.Title.Publisher)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Type)
+                @Html.DisplayNameFor(model => model.Title.Type)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Year)
+                @Html.DisplayNameFor(model => model.Title.Year)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Section.Name)
+                @Html.DisplayNameFor(model => model.Title.Section.Name)
             </th>
             <th></th>
         </tr>
@@ -46,35 +46,35 @@
 @foreach (var item in Model) {
         <tr>
             <td>
-                @Html.DisplayFor(modelItem => item.Annotation)
+                @Html.DisplayFor(modelItem => item.Title.Annotation)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Author)
+                @Html.DisplayFor(modelItem => item.Title.Author)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.ISBN)
+                @Html.DisplayFor(modelItem => item.Title.ISBN)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Name)
+                @Html.DisplayFor(modelItem => item.Title.Name)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Publisher)
+                @Html.DisplayFor(modelItem => item.Title.Publisher)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Type)
+                @Html.DisplayFor(modelItem => item.Title.Type)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Year)
+                @Html.DisplayFor(modelItem => item.Title.Year)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Section.Name)
+                @Html.DisplayFor(modelItem => item.Title.Section.Name)
             </td>
             <td>
                 @if (User.IsInRole("Admin") || User.IsInRole("Librarian"))
                 {
-                <a asp-action="TitleEdit" asp-route-id="@item.TitleId">Edit |</a> 
-                <a asp-action="TitleDetails" asp-route-id="@item.TitleId">Details |</a>
-                <a asp-action="TitleDelete" asp-route-id="@item.TitleId">Delete</a>
+                <a asp-action="TitleEdit" asp-route-id="@item.Title.TitleId">Edit |</a> 
+                <a asp-action="TitleDetails" asp-route-id="@item.Title.TitleId">Details |</a>
+                <a asp-action="TitleDelete" asp-route-id="@item.Title.TitleId">Delete</a>
                 }
             </td>
         </tr>

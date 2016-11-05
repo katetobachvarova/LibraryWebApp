@@ -1,4 +1,4 @@
-@model LibraryWebApp.Models.Title
+@model LibraryWebApp.Models.LibraryViewModels.TitleViewModel
 
 @{
     ViewData["Title"] = "Details";
@@ -11,50 +11,50 @@
     <hr />
     <dl class="dl-horizontal">
         <dt>
-            @Html.DisplayNameFor(model => model.Annotation)
+            @Html.DisplayNameFor(model => model.Title.Annotation)
         </dt>
         <dd>
-            @Html.DisplayFor(model => model.Annotation)
+            @Html.DisplayFor(model => model.Title.Annotation)
         </dd>
         <dt>
-            @Html.DisplayNameFor(model => model.Author)
+            @Html.DisplayNameFor(model => model.Title.Author)
         </dt>
         <dd>
-            @Html.DisplayFor(model => model.Author)
+            @Html.DisplayFor(model => model.Title.Author)
         </dd>
         <dt>
-            @Html.DisplayNameFor(model => model.ISBN)
+            @Html.DisplayNameFor(model => model.Title.ISBN)
         </dt>
         <dd>
-            @Html.DisplayFor(model => model.ISBN)
+            @Html.DisplayFor(model => model.Title.ISBN)
         </dd>
         <dt>
-            @Html.DisplayNameFor(model => model.Name)
+            @Html.DisplayNameFor(model => model.Title.Name)
         </dt>
         <dd>
-            @Html.DisplayFor(model => model.Name)
+            @Html.DisplayFor(model => model.Title.Name)
         </dd>
         <dt>
-            @Html.DisplayNameFor(model => model.Publisher)
+            @Html.DisplayNameFor(model => model.Title.Publisher)
         </dt>
         <dd>
-            @Html.DisplayFor(model => model.Publisher)
+            @Html.DisplayFor(model => model.Title.Publisher)
         </dd>
         <dt>
-            @Html.DisplayNameFor(model => model.Type)
+            @Html.DisplayNameFor(model => model.Title.Type)
         </dt>
         <dd>
-            @Html.DisplayFor(model => model.Type)
+            @Html.DisplayFor(model => model.Title.Type)
         </dd>
         <dt>
-            @Html.DisplayNameFor(model => model.Year)
+            @Html.DisplayNameFor(model => model.Title.Year)
         </dt>
         <dd>
-            @Html.DisplayFor(model => model.Year)
+            @Html.DisplayFor(model => model.Title.Year)
         </dd>
     </dl>
 </div>
 <div>
-    <a asp-action="TitleEdit" asp-route-id="@Model.TitleId">Edit</a> |
+    <a asp-action="TitleEdit" asp-route-id="@Model.Title.TitleId">Edit</a> |
     <a asp-action="TitleIndex">Back to List</a>
 </div>

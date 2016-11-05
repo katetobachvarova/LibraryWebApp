@@ -1,4 +1,4 @@
-@model LibraryWebApp.Models.Item
+@model LibraryWebApp.Models.LibraryViewModels.ItemViewModel
 
 @{
     ViewData["Title"] = "Details";
@@ -11,22 +11,22 @@
     <hr />
     <dl class="dl-horizontal">
         <dt>
-            @Html.DisplayNameFor(model => model.Condition)
+            @Html.DisplayNameFor(model => model.Item.Condition)
         </dt>
         <dd>
-            @Html.DisplayFor(model => model.Condition)
+            @Html.DisplayFor(model => model.Item.Condition)
         </dd>
         <dt>
-            @Html.DisplayNameFor(model => model.CurrentLocation)
+            @Html.DisplayNameFor(model => model.Item.CurrentLocation)
         </dt>
         <dd>
-            @Html.DisplayFor(model => model.CurrentLocation)
+            @Html.DisplayFor(model => model.Item.CurrentLocation)
         </dd>
         <dt>
-            @Html.DisplayNameFor(model => model.Material)
+            @Html.DisplayNameFor(model => model.Item.Material)
         </dt>
         <dd>
-            @Html.DisplayFor(model => model.Material)
+            @Html.DisplayFor(model => model.Item.Material)
         </dd>
         <dt>
              Title Name
@@ -37,6 +37,6 @@
     </dl>
 </div>
 <div>
-    <a asp-action="ItemEdit" asp-route-id="@Model.ItemId">Edit</a> |
+    <a asp-action="ItemEdit" asp-route-id="@Model.Item.ItemId">Edit</a> |
     <a asp-action="ItemIndex">Back to List</a>
 </div>

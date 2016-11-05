@@ -1,5 +1,6 @@
 ﻿using LibraryWebApp.Data;
 using LibraryWebApp.Models;
+using LibraryWebApp.Models.LibraryViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -36,8 +37,13 @@ namespace LibraryWebApp.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UserIndex()
         {
-           
-            return View(await _context.Users.ToListAsync());
+            var users = await _context.Users.ToListAsync();
+            var usersVM = new List<ApplicationUserViewModel>();
+            foreach (var item in users)
+            {
+                usersVM.Add(new ApplicationUserViewModel(item));
+            }
+            return View(usersVM);
         }
 
         // GET: ApplicationUsers/Details/5
@@ -50,15 +56,16 @@ namespace LibraryWebApp.Controllers
             }
 
             var applicationUser = await _context.Users.SingleOrDefaultAsync(m => m.Id == id);
-            
             if (applicationUser == null)
             {
                 return NotFound();
             }
+            var applicationUserVM = new ApplicationUserViewModel(applicationUser);
             var r = await _userManager.GetRolesAsync(applicationUser);
             SelectList UserRoles = new SelectList(r);
             ViewData["UserRoles"] = UserRoles;
-            return View(applicationUser);
+
+            return View(applicationUserVM);
         }
 
         // GET: ApplicationUsers/Edit/5
@@ -75,14 +82,13 @@ namespace LibraryWebApp.Controllers
             {
                 return NotFound();
             }
-
+            var applicationUserVM = new ApplicationUserViewModel(applicationUser);
             var listroles = System.Enum.GetValues(typeof(Models.Enum.LibraryRoles)).OfType<Models.Enum.LibraryRoles>();
             var r = await _userManager.GetRolesAsync(applicationUser);
             var sel = listroles.Where(e => e.ToString() == r.FirstOrDefault());
-
             SelectList UserRoles = new SelectList(listroles, sel.FirstOrDefault() );
             ViewData["UserRoles"] = UserRoles;
-            return View(applicationUser);
+            return View(applicationUserVM);
         }
 
         // POST: ApplicationUsers/Edit/5
@@ -90,38 +96,32 @@ namespace LibraryWebApp.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UserEdit(string id, string Role, [Bind("Id,AccessFailedCount,ConcurrencyStamp,Confirmed,Email,EmailConfirmed,LockoutEnabled,LockoutEnd,NormalizedEmail,NormalizedUserName,PasswordHash,PhoneNumber,PhoneNumberConfirmed,SecurityStamp,TwoFactorEnabled,UserName")] ApplicationUser applicationUser)
+        public async Task<IActionResult> UserEdit(string id, string Role, ApplicationUserViewModel applicationUserVM)
         {
-            if (id != applicationUser.Id)
+            if (id != applicationUserVM.ApplicationUser.Id)
             {
                 return NotFound();
             }
-
             if (ModelState.IsValid)
             {
                 try
                 {
-                   var currentrole = await _userManager.GetRolesAsync(applicationUser);
+                   var currentrole = await _userManager.GetRolesAsync(applicationUserVM.ApplicationUser);
                     if (!currentrole.Where(e => e == Role).Any())
                     {
-
                         var newRole = new IdentityUserRole<string>();
-                        newRole.RoleId = _context.Roles.Where(e => e.Name == Role)?.FirstOrDefault()?.Id;
-                        newRole.UserId = applicationUser.Id;
+                        newRole.RoleId = _context.Roles.Where(e => e.Name == applicationUserVM.ApplicationUser.Role)?.FirstOrDefault()?.Id;
+                        newRole.UserId = applicationUserVM.ApplicationUser.Id;
                         _context.UserRoles.Add(newRole);
                         _context.SaveChanges();
                     }
 
-
-                    // applicationUser.Roles.Add(role);
-                    
-
-                    _context.Update(applicationUser);
+                    _context.Update(applicationUserVM.ApplicationUser);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!ApplicationUserExists(applicationUser.Id))
+                    if (!ApplicationUserExists(applicationUserVM.ApplicationUser.Id))
                     {
                         return NotFound();
                     }
@@ -130,14 +130,14 @@ namespace LibraryWebApp.Controllers
                         throw;
                     }
                 }
-                var roleToRemove = await _userManager.GetRolesAsync(applicationUser);
+                var roleToRemove = await _userManager.GetRolesAsync(applicationUserVM.ApplicationUser);
                 foreach (var item in roleToRemove.Where(e => e != Role))
                 {
-                    await _userManager.RemoveFromRoleAsync(applicationUser, item);
+                    await _userManager.RemoveFromRoleAsync(applicationUserVM.ApplicationUser, item);
                 }
                 return RedirectToAction("UserIndex");
             }
-            return View(applicationUser);
+            return View(applicationUserVM);
         }
 
         // GET: ApplicationUsers/Delete/5
@@ -154,8 +154,8 @@ namespace LibraryWebApp.Controllers
             {
                 return NotFound();
             }
-
-            return View(applicationUser);
+            var applicationUserVM = new ApplicationUserViewModel(applicationUser);
+            return View(applicationUserVM);
         }
 
         // POST: ApplicationUsers/Delete/5
@@ -185,8 +185,13 @@ namespace LibraryWebApp.Controllers
         public async Task<IActionResult> FavouriteIndex()
         {
             var appuser = await _userManager.FindByNameAsync(User.Identity.Name);
-            var appuserfav = _context.Favourite.Where(e => e.User.UserName == appuser.UserName);
-            return View(await appuserfav.ToListAsync());
+            var appuserfav = await _context.Favourite.Where(e => e.User.UserName == appuser.UserName).ToListAsync();
+            var favouritesVM = new List<Models.LibraryViewModels.FavouriteViewModel>();
+            foreach (var item in appuserfav)
+            {
+                favouritesVM.Add(new Models.LibraryViewModels.FavouriteViewModel(item));
+            }
+            return View(favouritesVM);
         }
 
         // GET: Favourites/Details/5
@@ -203,31 +208,9 @@ namespace LibraryWebApp.Controllers
             {
                 return NotFound();
             }
+            var favouriteVM = new Models.LibraryViewModels.FavouriteViewModel(favourite);
 
-            return View(favourite);
-        }
-
-        // GET: Favourites/Create
-        [Authorize(Roles = "Admin, Librarian, RegUser")]
-        public IActionResult FavouriteCreate()
-        {
-            return View();
-        }
-
-        // POST: Favourites/Create
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> FavouriteCreate([Bind("FavouriteId,ApplicationUserId,Comment,Url")] Favourite favourite)
-        {
-            if (ModelState.IsValid)
-            {
-                _context.Add(favourite);
-                await _context.SaveChangesAsync();
-                return RedirectToAction("Index");
-            }
-            return View(favourite);
+            return View(favouriteVM);
         }
 
         // GET: Favourites/Edit/5
@@ -244,7 +227,8 @@ namespace LibraryWebApp.Controllers
             {
                 return NotFound();
             }
-            return View(favourite);
+            var favouriteVM = new Models.LibraryViewModels.FavouriteViewModel(favourite);
+            return View(favouriteVM);
         }
 
         // POST: Favourites/Edit/5
@@ -252,20 +236,20 @@ namespace LibraryWebApp.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> FavouriteEdit(int id, [Bind("Comment")] Favourite fav)
+        public async Task<IActionResult> FavouriteEdit(int id, Models.LibraryViewModels.FavouriteViewModel favouriteVM)
         {
-            var favourite = await _context.Favourite.SingleOrDefaultAsync(m => m.FavouriteId == id);
 
-            if (id != favourite.FavouriteId)
+            if (id != favouriteVM.Favourite.FavouriteId)
             {
                 return NotFound();
             }
+            var favourite = await _context.Favourite.SingleOrDefaultAsync(m => m.FavouriteId == id);
 
             if (ModelState.IsValid)
             {
                 try
                 {
-                    favourite.Comment = fav?.Comment;
+                    favourite.Comment = favouriteVM?.Favourite.Comment;
                     _context.Update(favourite);
                     await _context.SaveChangesAsync();
                 }
@@ -282,7 +266,7 @@ namespace LibraryWebApp.Controllers
                 }
                 return RedirectToAction("FavouriteIndex");
             }
-            return View(favourite);
+            return View(favouriteVM);
         }
 
         // GET: Favourites/Delete/5
@@ -299,8 +283,9 @@ namespace LibraryWebApp.Controllers
             {
                 return NotFound();
             }
+            var favouriteVM = new Models.LibraryViewModels.FavouriteViewModel(favourite);
 
-            return View(favourite);
+            return View(favouriteVM);
         }
 
         // POST: Favourites/Delete/5
@@ -312,8 +297,6 @@ namespace LibraryWebApp.Controllers
             _context.Favourite.Remove(favourite);
             await _context.SaveChangesAsync();
             return RedirectToAction("FavouriteIndex");
-
-
         }
 
         private bool FavouriteExists(int id)
@@ -327,8 +310,13 @@ namespace LibraryWebApp.Controllers
         [Authorize(Roles = "Admin, Librarian")]
         public async Task<IActionResult> ItemMovementIndex()
         {
-            var applicationDbContext = _context.ItemMovements.Include(i => i.Item).Include(e => e.Item.Title).Include(p => p.Librarian).Include(u =>u.User);
-            return View(await applicationDbContext.ToListAsync());
+            var itemMovements = await _context.ItemMovements.Include(i => i.Item).Include(e => e.Item.Title).Include(p => p.Librarian).Include(u =>u.User).ToListAsync();
+            var itemMovementsVM = new List<ItemMovementViewModel>();
+            foreach (var item in itemMovements)
+            {
+                itemMovementsVM.Add(new ItemMovementViewModel(item));
+            }
+            return View(itemMovementsVM);
         }
 
         // GET: ItemMovements/Details/5
@@ -341,20 +329,18 @@ namespace LibraryWebApp.Controllers
             }
 
             var itemMovement = await _context.ItemMovements.SingleOrDefaultAsync(m => m.ItemMovementId == id);
-            ViewData["ApplicationUserId"] = _context.Users.Where(e => e.Id == itemMovement.ApplicationUserId).FirstOrDefault().UserName;
-            var titleId = _context.Items.Where(e => e.ItemId == itemMovement.ItemId).FirstOrDefault().TitleId;
-            ViewData["ItemId"] = _context.Items.Where(e => e.ItemId == itemMovement.ItemId).FirstOrDefault().ItemId;
-            ViewData["TitleName"] = _context.Titles.Where(e => e.TitleId == titleId).FirstOrDefault().Name;
-
-            ViewData["LibrarianId"] = _context.Users.Where(e => e.Id == itemMovement.LibrarianId).FirstOrDefault().UserName;
-
-
             if (itemMovement == null)
             {
                 return NotFound();
             }
+            ViewData["ApplicationUserId"] = _context.Users.Where(e => e.Id == itemMovement.ApplicationUserId).FirstOrDefault().UserName;
+            var titleId = _context.Items.Where(e => e.ItemId == itemMovement.ItemId).FirstOrDefault().TitleId;
+            ViewData["ItemId"] = _context.Items.Where(e => e.ItemId == itemMovement.ItemId).FirstOrDefault().ItemId;
+            ViewData["TitleName"] = _context.Titles.Where(e => e.TitleId == titleId).FirstOrDefault().Name;
+            ViewData["LibrarianId"] = _context.Users.Where(e => e.Id == itemMovement.LibrarianId).FirstOrDefault().UserName;
 
-            return View(itemMovement);
+            var itemMovementVM = new ItemMovementViewModel(itemMovement);
+            return View(itemMovementVM);
         }
 
         // GET: ItemMovements/Create
@@ -362,18 +348,9 @@ namespace LibraryWebApp.Controllers
         public IActionResult ItemMovementCreate()
         {
             ViewData["ApplicationUserId"] = new SelectList(_userManager.Users.ToList(), "Id", "UserName");
-            //var titleIds = _context.Items.Select(e => e.TitleId);
-            //var titleNames = new List<string>();
-            //foreach (var item in titleIds)
-            //{
-            //    titleNames.Add(_context.Titles.Where(e => e.TitleId == item).First().Name);
-            //}
-            //ViewData["ItemId"] = new SelectList(titleNames);
-
             ViewData["ItemId"] = new SelectList(_context.Items.Include(e => e.Title), "ItemId", "ItemId");
             var listMovType = System.Enum.GetValues(typeof(Models.Enum.MovementType)).OfType<Models.Enum.MovementType>();
             ViewData["MovType"] = new SelectList(listMovType);
-
             return View();
         }
 
@@ -382,20 +359,20 @@ namespace LibraryWebApp.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ItemMovementCreate([Bind("ItemMovementId,ApplicationUserId,Condition,Date,Deadline,ItemId,LibrarianId,MovementType,RowVersion")] ItemMovement itemMovement)
+        public async Task<IActionResult> ItemMovementCreate(ItemMovementViewModel itemMovementVM)
         {
             if (ModelState.IsValid)
             {
                 var librarian = _context.Users.Where(e => e.UserName == User.Identity.Name).FirstOrDefault();
-                itemMovement.LibrarianId = librarian.Id;
-                _context.Add(itemMovement);
+                itemMovementVM.ItemMovement.LibrarianId = librarian.Id;
+                _context.Add(itemMovementVM.ItemMovement);
                 await _context.SaveChangesAsync();
                 return RedirectToAction("ItemMovementIndex");
             }
 
-            ViewData["ApplicationUserId"] = new SelectList(_userManager.Users.ToList(), "Id", "UserName", itemMovement.ApplicationUserId);
-            ViewData["ItemId"] = new SelectList(_context.Items, "ItemId", "Name", itemMovement.ItemId);
-            return View(itemMovement);
+            ViewData["ApplicationUserId"] = new SelectList(_userManager.Users.ToList(), "Id", "UserName", itemMovementVM.ItemMovement.ApplicationUserId);
+            ViewData["ItemId"] = new SelectList(_context.Items, "ItemId", "Name", itemMovementVM.ItemMovement.ItemId);
+            return View(itemMovementVM);
         }
 
         // GET: ItemMovements/Edit/5
@@ -413,7 +390,8 @@ namespace LibraryWebApp.Controllers
                 return NotFound();
             }
             ViewData["ItemId"] = new SelectList(_context.Items, "ItemId", "ItemId", itemMovement.ItemId);
-            return View(itemMovement);
+            var itemMovementVM = new ItemMovementViewModel(itemMovement);
+            return View(itemMovementVM);
         }
 
         // POST: ItemMovements/Edit/5
@@ -421,9 +399,9 @@ namespace LibraryWebApp.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ItemMovementEdit(int id, byte[] rowVersion, [Bind("ItemMovementId,ApplicationUserId,Condition,Date,Deadline,ItemId,LibrarianId,MovementType,RowVersion")] ItemMovement itemMovement)
+        public async Task<IActionResult> ItemMovementEdit(int id, ItemMovementViewModel itemMovementVM)
         {
-            if (id != itemMovement.ItemMovementId)
+            if (id != itemMovementVM.ItemMovement.ItemMovementId)
             {
                 return NotFound();
             }
@@ -432,17 +410,13 @@ namespace LibraryWebApp.Controllers
             {
                 ItemMovement deletedItem = new ItemMovement();
                 await TryUpdateModelAsync(deletedItem);
+                var deletedItemMovVM = new ItemMovementViewModel(deletedItem);
                 ModelState.AddModelError(string.Empty,
                     "Unable to save changes. The item movement was deleted by another user.");
-                return View(deletedItem);
+                return View(deletedItemMovVM);
             }
-            _context.Entry(itemMov).Property("RowVersion").OriginalValue = rowVersion;
-
-            if (await TryUpdateModelAsync<ItemMovement>(
-                itemMov,
-                "",
-                s => s.Deadline))
-            {
+            _context.Entry(itemMov).Property("RowVersion").OriginalValue = itemMovementVM.ItemMovement.RowVersion;
+            itemMov.Deadline = itemMovementVM.ItemMovement.Deadline;
                 try
                 {
                     await _context.SaveChangesAsync();
@@ -450,6 +424,7 @@ namespace LibraryWebApp.Controllers
                 }
                 catch (DbUpdateConcurrencyException ex)
                 {
+                    ModelState.Clear();
                     var exceptionEntry = ex.Entries.Single();
                     // Using a NoTracking query means we get the entity but it is not tracked by the context
                     // and will not be merged with existing entities in the context.
@@ -464,7 +439,7 @@ namespace LibraryWebApp.Controllers
                     var proposedDeadline = (DateTime)exceptionEntry.Property("Deadline").CurrentValue;
                     if (databaseDeadline != proposedDeadline)
                     {
-                        ModelState.AddModelError("Deadline", $"Current value: {databaseDeadline}");
+                        ModelState.AddModelError("ItemMovement.Deadline", $"Current value: {databaseDeadline}");
                     }
                     
                     ModelState.AddModelError(string.Empty, "The record you attempted to edit "
@@ -472,14 +447,12 @@ namespace LibraryWebApp.Controllers
                     + "edit operation was canceled and the current values in the database "
                     + "have been displayed. If you still want to edit this record, click "
                     + "the Save button again. Otherwise click the Back to List hyperlink.");
-                    itemMov.RowVersion = (byte[])databaseEntry.Property("RowVersion").CurrentValue;
-                    ModelState.Remove("RowVersion");
+                    itemMovementVM.ItemMovement.RowVersion = (byte[])databaseEntry.Property("RowVersion").CurrentValue;
                 }
-            }
 
 
-            ViewData["ItemId"] = new SelectList(_context.Items, "ItemId", "ItemId", itemMovement.ItemId);
-            return View(itemMovement);
+            ViewData["ItemId"] = new SelectList(_context.Items, "ItemId", "ItemId", itemMovementVM.ItemMovement.ItemId);
+            return View(itemMovementVM);
         }
 
         // GET: ItemMovements/Delete/5
@@ -490,8 +463,6 @@ namespace LibraryWebApp.Controllers
             {
                 return NotFound();
             }
-
-
             var itemMovement = await _context.ItemMovements.AsNoTracking().SingleOrDefaultAsync(m => m.ItemMovementId == id);
             if (itemMovement == null)
             {
@@ -510,14 +481,15 @@ namespace LibraryWebApp.Controllers
                     + "record, click the Delete button again. Otherwise "
                     + "click the Back to List hyperlink.";
             }
+            var itemMovementVM = new ItemMovementViewModel(itemMovement);
+
             ViewData["ApplicationUserId"] = _context.Users.Where(e => e.Id == itemMovement.ApplicationUserId).FirstOrDefault().UserName;
             var titleId = _context.Items.Where(e => e.ItemId == itemMovement.ItemId).FirstOrDefault().TitleId;
             ViewData["ItemId"] = _context.Items.Where(e => e.ItemId == itemMovement.ItemId).FirstOrDefault().ItemId;
             ViewData["TitleName"] = _context.Titles.Where(e => e.TitleId == titleId).FirstOrDefault().Name;
-
             ViewData["LibrarianId"] = _context.Users.Where(e => e.Id == itemMovement.LibrarianId).FirstOrDefault().UserName;
 
-            return View(itemMovement);
+            return View(itemMovementVM);
         }
 
         // POST: ItemMovements/Delete/5
@@ -525,12 +497,6 @@ namespace LibraryWebApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ItemMovementDeleteConfirmed(int id)
         {
-            //var itemMovement = await _context.ItemMovements.SingleOrDefaultAsync(m => m.ItemMovementId == id);
-            //_context.ItemMovements.Remove(itemMovement);
-            //await _context.SaveChangesAsync();
-            //return RedirectToAction("ItemMovementIndex");
-
-
             try
             {
                 if (await _context.ItemMovements.AnyAsync(m => m.ItemMovementId == id))
@@ -559,7 +525,13 @@ namespace LibraryWebApp.Controllers
         // GET: Sections
         public async Task<IActionResult> SectionIndex()
         {
-            return View(await _context.Sections.ToListAsync());
+            var sections = await _context.Sections.ToListAsync();
+            var sectionsVM = new List<SectionViewModel>();
+            foreach (var item in sections)
+            {
+                sectionsVM.Add(new SectionViewModel(item));
+            }
+            return View(sectionsVM);
         }
 
         // GET: Sections/Details/5
@@ -570,14 +542,13 @@ namespace LibraryWebApp.Controllers
             {
                 return NotFound();
             }
-
             var section = await _context.Sections.SingleOrDefaultAsync(m => m.SectionId == id);
             if (section == null)
             {
                 return NotFound();
             }
-
-            return View(section);
+            var sectionVM = new SectionViewModel(section);
+            return View(sectionVM);
         }
 
         // GET: Sections/Create
@@ -592,15 +563,15 @@ namespace LibraryWebApp.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SectionCreate([Bind("SectionId,Description,Name")] Section section)
+        public async Task<IActionResult> SectionCreate(SectionViewModel sectionVM)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(section);
+                _context.Add(sectionVM.Section);
                 await _context.SaveChangesAsync();
                 return RedirectToAction("SectionIndex");
             }
-            return View(section);
+            return View(sectionVM);
         }
 
         // GET: Sections/Edit/5
@@ -617,7 +588,8 @@ namespace LibraryWebApp.Controllers
             {
                 return NotFound();
             }
-            return View(section);
+            var sectionVM = new SectionViewModel(section);
+            return View(sectionVM);
 
         }
 
@@ -626,9 +598,9 @@ namespace LibraryWebApp.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SectionEdit(int id, byte[] rowVersion, [Bind("SectionId,Description,Name")] Section sectionb)
+        public async Task<IActionResult> SectionEdit(int id, SectionViewModel sectionVM)
         {
-            if (id != sectionb.SectionId)
+            if (id != sectionVM.Section.SectionId)
             {
                 return NotFound();
             }
@@ -638,17 +610,15 @@ namespace LibraryWebApp.Controllers
             {
                 Section deletedSection = new Section();
                 await TryUpdateModelAsync(deletedSection);
+                var deletedSectionVM = new SectionViewModel(deletedSection);
                 ModelState.AddModelError(string.Empty,
                     "Unable to save changes. The section was deleted by another user.");
-                return View(deletedSection);
+                return View(deletedSectionVM);
             }
-            _context.Entry(section).Property("RowVersion").OriginalValue = rowVersion;
-
-            if (await TryUpdateModelAsync<Section>(
-                section,
-                "",
-                s => s.Name, s => s.Description))
-            {
+            _context.Entry(section).Property("RowVersion").OriginalValue = sectionVM.Section.RowVersion;
+            section.Description = sectionVM.Section.Description;
+            section.Name = sectionVM.Section.Name;
+           
                 try
                 {
                     await _context.SaveChangesAsync();
@@ -656,6 +626,7 @@ namespace LibraryWebApp.Controllers
                 }
                 catch (DbUpdateConcurrencyException ex)
                 {
+                    ModelState.Clear();
                     var exceptionEntry = ex.Entries.Single();
                     // Using a NoTracking query means we get the entity but it is not tracked by the context
                     // and will not be merged with existing entities in the context.
@@ -669,13 +640,13 @@ namespace LibraryWebApp.Controllers
                     var proposedName = (string)exceptionEntry.Property("Name").CurrentValue;
                     if (databaseName != proposedName)
                     {
-                        ModelState.AddModelError("Name", $"Current value: {databaseName}");
+                        ModelState.AddModelError("Section.Name", $"Current value: {databaseName}");
                     }
                     var databaseDescription = (string)databaseEntry.Property("Description").CurrentValue;
                     var proposedDescription = (string)exceptionEntry.Property("Description").CurrentValue;
                     if (databaseDescription != proposedDescription)
                     {
-                        ModelState.AddModelError("Description", $"Current value: {databaseDescription}");
+                        ModelState.AddModelError("Section.Description", $"Current value: {databaseDescription}");
                     }
                     
                     ModelState.AddModelError(string.Empty, "The record you attempted to edit "
@@ -683,11 +654,10 @@ namespace LibraryWebApp.Controllers
                     + "edit operation was canceled and the current values in the database "
                     + "have been displayed. If you still want to edit this record, click "
                     + "the Save button again. Otherwise click the Back to List hyperlink.");
-                    section.RowVersion = (byte[])databaseEntry.Property("RowVersion").CurrentValue;
+                    sectionVM.Section.RowVersion = (byte[])databaseEntry.Property("RowVersion").CurrentValue;
                     ModelState.Remove("RowVersion");
                 }
-            }
-            return View(section);
+            return View(sectionVM);
         }
 
         // GET: Sections/Delete/5
@@ -707,9 +677,9 @@ namespace LibraryWebApp.Controllers
                 {
                     return RedirectToAction("SectionIndex");
                 }
-
                 return NotFound();
             }
+            var sectionVM = new SectionViewModel(section);
             if (concurrencyError.GetValueOrDefault())
             {
                 ViewData["ConcurrencyErrorMessage"] = "The record you attempted to delete "
@@ -720,7 +690,7 @@ namespace LibraryWebApp.Controllers
                     + "click the Back to List hyperlink.";
             }
 
-            return View(section);
+            return View(sectionVM);
 
         }
 
@@ -759,8 +729,13 @@ namespace LibraryWebApp.Controllers
         // GET: Titles
         public async Task<IActionResult> TitleIndex()
         {
-            var libraryContext = _context.Titles.Include(t => t.Section);
-            return View(await libraryContext.ToListAsync());
+            var titles = await _context.Titles.Include(t => t.Section).ToListAsync();
+            var titlesVM = new List<TitleViewModel>();
+            foreach (var item in titles)
+            {
+                titlesVM.Add(new TitleViewModel(item));
+            }
+            return View(titlesVM);
         }
 
         // GET: Titles/Details/5
@@ -777,8 +752,8 @@ namespace LibraryWebApp.Controllers
             {
                 return NotFound();
             }
-            var numberOfItemsAvailable = _context.Items.Where(e => e.TitleId == title.TitleId).Count();
-            return View(title);
+            TitleViewModel titleVM = new TitleViewModel(title);
+            return View(titleVM);
         }
 
         // GET: Titles/Create
@@ -794,16 +769,16 @@ namespace LibraryWebApp.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> TitleCreate([Bind("TitleId,Annotation,Author,ISBN,Name,Publisher,SectionId,Type,Year")] Title title)
+        public async Task<IActionResult> TitleCreate(TitleViewModel titleVM)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(title);
+                _context.Add(titleVM.Title);
                 await _context.SaveChangesAsync();
                 return RedirectToAction("TitleIndex");
             }
-            ViewData["SectionId"] = new SelectList(_context.Sections, "SectionId", "SectionId", title.SectionId);
-            return View(title);
+            ViewData["SectionId"] = new SelectList(_context.Sections, "SectionId", "SectionId", titleVM.Title.SectionId);
+            return View(titleVM);
         }
 
         // GET: Titles/Edit/5
@@ -820,9 +795,9 @@ namespace LibraryWebApp.Controllers
             {
                 return NotFound();
             }
-
+            TitleViewModel titleVM = new TitleViewModel(title);
             ViewData["SectionId"] = new SelectList(_context.Sections, "SectionId", "Name");
-            return View(title);
+            return View(titleVM);
         }
 
         // POST: Titles/Edit/5
@@ -830,9 +805,9 @@ namespace LibraryWebApp.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> TitleEdit(int id, byte[] rowVersion, [Bind("TitleId,Annotation,Author,ISBN,Name,Publisher,SectionId,Type,Year")] Title titlem)
+        public async Task<IActionResult> TitleEdit(int id, TitleViewModel titleVM)
         {
-            if (id != titlem.TitleId)
+            if (id != titleVM.Title.TitleId)
             {
                 return NotFound();
             }
@@ -842,25 +817,30 @@ namespace LibraryWebApp.Controllers
             {
                 Title deletedTitle = new Title();
                 await TryUpdateModelAsync(deletedTitle);
+                var deletedTitleVM = new TitleViewModel(deletedTitle);
+                ViewData["SectionId"] = new SelectList(_context.Sections, "SectionId", "Name");
                 ModelState.AddModelError(string.Empty,
                     "Unable to save changes. The title was deleted by another user.");
-                return View(deletedTitle);
+                return View(deletedTitleVM);
             }
-            _context.Entry(title).Property("RowVersion").OriginalValue = rowVersion;
-
-            if (await TryUpdateModelAsync<Title>(
-                title,
-                "",
-                s => s.Name, s => s.Annotation, s => s.Author, s => s.Year, s => s.ISBN,
-                s => s.Publisher, s => s.Type, s => s.SectionId))
-            {
-                try
+            _context.Entry(title).Property("RowVersion").OriginalValue = titleVM.Title.RowVersion;
+            title.Annotation = titleVM.Title.Annotation;
+            title.Author = titleVM.Title.Author;
+            title.ISBN = titleVM.Title.ISBN;
+            title.Name = titleVM.Title.Name;
+            title.Publisher = titleVM.Title.Publisher;
+            title.SectionId = titleVM.Title.SectionId;
+            title.Year = titleVM.Title.Year;
+            title.Type = titleVM.Title.Type;
+           
+            try
                 {
                     await _context.SaveChangesAsync();
                     return RedirectToAction("TitleIndex");
                 }
                 catch (DbUpdateConcurrencyException ex)
                 {
+                    ModelState.Clear();
                     var exceptionEntry = ex.Entries.Single();
                     // Using a NoTracking query means we get the entity but it is not tracked by the context
                     // and will not be merged with existing entities in the context.
@@ -874,63 +854,63 @@ namespace LibraryWebApp.Controllers
                     var proposedName = (string)exceptionEntry.Property("Name").CurrentValue;
                     if (databaseName != proposedName)
                     {
-                        ModelState.AddModelError("Name", $"Current value: {databaseName}");
+                        ModelState.AddModelError("Title.Name", $"Current value: {databaseName}");
                     }
                     var databaseAnnotation = (string)databaseEntry.Property("Annotation").CurrentValue;
                     var proposedAnnotation = (string)exceptionEntry.Property("Annotation").CurrentValue;
                     if (databaseAnnotation != proposedAnnotation)
                     {
-                        ModelState.AddModelError("Annotation", $"Current value: {databaseAnnotation}");
+                        ModelState.AddModelError("Title.Annotation", $"Current value: {databaseAnnotation}");
                     }
                     var databaseAuthor = (string)databaseEntry.Property("Author").CurrentValue;
                     var proposedAuthor = (string)exceptionEntry.Property("Author").CurrentValue;
                     if (databaseAuthor != proposedAuthor)
                     {
-                        ModelState.AddModelError("Author", $"Current value: {databaseAuthor}");
+                        ModelState.AddModelError("Title.Author", $"Current value: {databaseAuthor}");
                     }
                     var databaseYear = (short)databaseEntry.Property("Year").CurrentValue;
                     var proposedYear = (short)exceptionEntry.Property("Year").CurrentValue;
                     if (databaseYear != proposedYear)
                     {
-                        ModelState.AddModelError("Year", $"Current value: {databaseYear:d}");
+                        ModelState.AddModelError("Title.Year", $"Current value: {databaseYear:d}");
                     }
                     var databaseISBN = (string)databaseEntry.Property("ISBN").CurrentValue;
                     var proposedISBN = (string)exceptionEntry.Property("ISBN").CurrentValue;
                     if (databaseISBN != proposedISBN)
                     {
-                        ModelState.AddModelError("ISBN", $"Current value: {databaseISBN}");
+                        ModelState.AddModelError("Title.ISBN", $"Current value: {databaseISBN}");
                     }
 
                     var databasePublisher = (string)databaseEntry.Property("Publisher").CurrentValue;
                     var proposedPublisher = (string)exceptionEntry.Property("Publisher").CurrentValue;
                     if (databasePublisher != proposedPublisher)
                     {
-                        ModelState.AddModelError("Publisher", $"Current value: {databasePublisher}");
+                        ModelState.AddModelError("Title.Publisher", $"Current value: {databasePublisher}");
                     }
                     var databaseType = (string)databaseEntry.Property("Type").CurrentValue;
                     var proposedType = (string)exceptionEntry.Property("Type").CurrentValue;
                     if (databaseType != proposedType)
                     {
-                        ModelState.AddModelError("Type", $"Current value: {databaseType}");
+                        ModelState.AddModelError("Title.Type", $"Current value: {databaseType}");
                     }
                     var databaseSectionId = (int)databaseEntry.Property("SectionId").CurrentValue;
                     var proposedSectionId = (int)exceptionEntry.Property("SectionId").CurrentValue;
                     if (databaseSectionId != proposedSectionId)
                     {
                         Section databaseSection = await _context.Sections.SingleAsync(i => i.SectionId == databaseSectionId);
-                        ModelState.AddModelError("SectionID", $"Current value: {databaseSection.SectionId}");
+                        ModelState.AddModelError("Title.SectionID", $"Current value: {databaseSection.SectionId}");
                     }
                     ModelState.AddModelError(string.Empty, "The record you attempted to edit "
                     + "was modified by another user after you got the original value. The "
                     + "edit operation was canceled and the current values in the database "
                     + "have been displayed. If you still want to edit this record, click "
                     + "the Save button again. Otherwise click the Back to List hyperlink.");
-                    title.RowVersion = (byte[])databaseEntry.Property("RowVersion").CurrentValue;
-                    ModelState.Remove("RowVersion");
+                    
+                    titleVM.Title.RowVersion = (byte[])databaseEntry.Property("RowVersion").CurrentValue;
                 }
-            }
             ViewData["SectionId"] = new SelectList(_context.Sections, "SectionId", "Name");
-            return View(title);
+
+            return View(titleVM);
 
         }
 
@@ -954,6 +934,7 @@ namespace LibraryWebApp.Controllers
 
                 return NotFound();
             }
+            var titleVM = new TitleViewModel(title);
             if (concurrencyError.GetValueOrDefault())
             {
                 ViewData["ConcurrencyErrorMessage"] = "The record you attempted to delete "
@@ -964,18 +945,18 @@ namespace LibraryWebApp.Controllers
                     + "click the Back to List hyperlink.";
             }
 
-            return View(title);
+            return View(titleVM);
         }
 
         [HttpPost, ActionName("TitleDelete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> TitleDelete(Title titlexx)
+        public async Task<IActionResult> TitleDelete(TitleViewModel titleVM)
         {
             try
             {
-                if (await _context.Titles.AnyAsync(m => m.TitleId == titlexx.TitleId))
+                if (await _context.Titles.AnyAsync(m => m.TitleId == titleVM.Title.TitleId))
                 {
-                    _context.Titles.Remove(titlexx);
+                    _context.Titles.Remove(titleVM.Title);
                     await _context.SaveChangesAsync();
                 }
                 return RedirectToAction("TitleIndex");
@@ -984,9 +965,8 @@ namespace LibraryWebApp.Controllers
             catch (DbUpdateConcurrencyException /* ex */)
             {
                 //Log the error (uncomment ex variable name and write a log.)
-                return RedirectToAction("TitleDelete", new { concurrencyError = true, id = titlexx.TitleId });
+                return RedirectToAction("TitleDelete", new { concurrencyError = true, id = titleVM.Title.TitleId });
             }
-
         }
 
         private bool TitleExists(int id)
@@ -1009,7 +989,7 @@ namespace LibraryWebApp.Controllers
             }
 
             var item = await _context.Items.SingleOrDefaultAsync(m => m.ItemId == id);
-            var fav = new FavouriteViewModel();
+            var fav = new Models.LibraryViewModels.FavouriteViewModel();
             if (item == null)
             {
                 return NotFound();
@@ -1020,7 +1000,7 @@ namespace LibraryWebApp.Controllers
 
         [HttpPost, ActionName("ItemAddToFavourites")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ItemAddToFavouritesConfirmed(int id, FavouriteViewModel f)
+        public async Task<IActionResult> ItemAddToFavouritesConfirmed(int id, Models.LibraryViewModels.FavouriteViewModel f)
         {
             var item = await _context.Items.SingleOrDefaultAsync(m => m.ItemId == id);
             var appuser = await _userManager.FindByNameAsync(User.Identity.Name);
@@ -1034,8 +1014,13 @@ namespace LibraryWebApp.Controllers
         // GET: Items
         public async Task<IActionResult> ItemIndex()
         {
-            var libraryContext = _context.Items.Include(i => i.Title).Include(e => e.Title.Section);
-            return View(await libraryContext.ToListAsync());
+            var items = await _context.Items.Include(i => i.Title).Include(e => e.Title.Section).ToListAsync();
+            var itemsVM = new List<ItemViewModel>();
+            foreach (var item in items)
+            {
+                itemsVM.Add(new ItemViewModel(item));
+            }
+            return View(itemsVM);
         }
 
         // GET: Items/Details/5
@@ -1050,8 +1035,8 @@ namespace LibraryWebApp.Controllers
             {
                 return NotFound();
             }
-
-            return View(item);
+            var itemVM = new ItemViewModel(item);
+            return View(itemVM);
         }
 
         // GET: Items/Create
@@ -1067,16 +1052,16 @@ namespace LibraryWebApp.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ItemCreate([Bind("ItemId,Condition,CurrentLocation,Material,TitleId")] Item item)
+        public async Task<IActionResult> ItemCreate(ItemViewModel itemVM)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(item);
+                _context.Add(itemVM.Item);
                 await _context.SaveChangesAsync();
                 return RedirectToAction("ItemIndex");
             }
-            ViewData["TitleId"] = new SelectList(_context.Titles, "TitleId", "TitleId", item.TitleId);
-            return View(item);
+            ViewData["TitleId"] = new SelectList(_context.Titles, "TitleId", "TitleId", itemVM.Item.TitleId);
+            return View(itemVM);
         }
 
         // GET: Items/Edit/5
@@ -1093,8 +1078,9 @@ namespace LibraryWebApp.Controllers
             {
                 return NotFound();
             }
+            var itemVM = new ItemViewModel(item);
             ViewData["TitleId"] = new SelectList(_context.Titles, "TitleId", "Name");
-            return View(item);
+            return View(itemVM);
         }
 
         // POST: Items/Edit/5
@@ -1102,9 +1088,9 @@ namespace LibraryWebApp.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ItemEdit(int id, byte[] rowVersion, [Bind("ItemId,Condition,CurrentLocation,Material,TitleId")] Item itemb)
+        public async Task<IActionResult> ItemEdit(int id, byte[] rowVersion, ItemViewModel itemVM)
         {
-            if (id != itemb.ItemId)
+            if (id != itemVM.Item.ItemId)
             {
                 return NotFound();
             }
@@ -1114,24 +1100,26 @@ namespace LibraryWebApp.Controllers
             {
                 Item deletedItem = new Item();
                 await TryUpdateModelAsync(deletedItem);
+                var deletedItemVM = new ItemViewModel(deletedItem);
+                ViewData["TitleId"] = new SelectList(_context.Titles, "TitleId", "Name");
                 ModelState.AddModelError(string.Empty,
                     "Unable to save changes. The title was deleted by another user.");
-                return View(deletedItem);
+                return View(deletedItemVM);
             }
-            _context.Entry(item).Property("RowVersion").OriginalValue = rowVersion;
+            _context.Entry(item).Property("RowVersion").OriginalValue = itemVM.Item.RowVersion;
+            item.Material = itemVM.Item.Material;
+            item.Condition = itemVM.Item.Condition;
+            item.CurrentLocation = itemVM.Item.CurrentLocation;
+            item.TitleId = itemVM.Item.TitleId;
 
-            if (await TryUpdateModelAsync<Item>(
-                item,
-                "",
-                s => s.Condition, s => s.CurrentLocation, s => s.Material, s => s.TitleId))
+            try
             {
-                try
-                {
                     await _context.SaveChangesAsync();
                     return RedirectToAction("ItemIndex");
                 }
                 catch (DbUpdateConcurrencyException ex)
                 {
+                    ModelState.Clear();
                     var exceptionEntry = ex.Entries.Single();
                     // Using a NoTracking query means we get the entity but it is not tracked by the context
                     // and will not be merged with existing entities in the context.
@@ -1146,20 +1134,20 @@ namespace LibraryWebApp.Controllers
                     var proposedCondition = (string)exceptionEntry.Property("Condition").CurrentValue;
                     if (databaseCondition != proposedCondition)
                     {
-                        ModelState.AddModelError("Condition", $"Current value: {databaseCondition}");
+                        ModelState.AddModelError("Item.Condition", $"Current value: {databaseCondition}");
                     }
                     var databaseMaterial = (string)databaseEntry.Property("Material").CurrentValue;
                     var proposedMaterial = (string)exceptionEntry.Property("Material").CurrentValue;
                     if (databaseMaterial != proposedMaterial)
                     {
-                        ModelState.AddModelError("Material", $"Current value: {databaseMaterial}");
+                        ModelState.AddModelError("Item.Material", $"Current value: {databaseMaterial}");
                     }
                  
                     var databaseCurrentLocation = (string)databaseEntry.Property("CurrentLocation").CurrentValue;
                     var proposedCurrentLocation = (string)exceptionEntry.Property("CurrentLocation").CurrentValue;
                     if (databaseCurrentLocation != proposedCurrentLocation)
                     {
-                        ModelState.AddModelError("CurrentLocation", $"Current value: {databaseCurrentLocation}");
+                        ModelState.AddModelError("Item.CurrentLocation", $"Current value: {databaseCurrentLocation}");
                     }
                     
                     var databaseTitleId = (int)databaseEntry.Property("TitleId").CurrentValue;
@@ -1167,19 +1155,18 @@ namespace LibraryWebApp.Controllers
                     if (databaseTitleId != proposedTitleId)
                     {
                         Title databaseTitle = await _context.Titles.SingleAsync(i => i.TitleId == databaseTitleId);
-                        ModelState.AddModelError("TitleId", $"Current value: {databaseTitle.TitleId}");
+                        ModelState.AddModelError("Item.TitleId", $"Current value: {databaseTitle.TitleId}");
                     }
                     ModelState.AddModelError(string.Empty, "The record you attempted to edit "
                     + "was modified by another user after you got the original value. The "
                     + "edit operation was canceled and the current values in the database "
                     + "have been displayed. If you still want to edit this record, click "
                     + "the Save button again. Otherwise click the Back to List hyperlink.");
-                    item.RowVersion = (byte[])databaseEntry.Property("RowVersion").CurrentValue;
-                    ModelState.Remove("RowVersion");
-                }
+                    itemVM.Item.RowVersion = (byte[])databaseEntry.Property("RowVersion").CurrentValue;
             }
+
             ViewData["TitleId"] = new SelectList(_context.Titles, "TitleId", "Name");
-            return View(item);
+            return View(itemVM);
         }
 
         // GET: Items/Delete/5
@@ -1200,6 +1187,7 @@ namespace LibraryWebApp.Controllers
                 }
                 return NotFound();
             }
+            var itemVM = new ItemViewModel(item);
             if (concurrencyError.GetValueOrDefault())
             {
                 ViewData["ConcurrencyErrorMessage"] = "The record you attempted to delete "
@@ -1210,7 +1198,7 @@ namespace LibraryWebApp.Controllers
                     + "click the Back to List hyperlink.";
             }
 
-            return View(item);
+            return View(itemVM);
         }
 
         // POST: Items/Delete/5

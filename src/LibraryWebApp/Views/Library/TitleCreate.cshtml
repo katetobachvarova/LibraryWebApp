@@ -1,4 +1,4 @@
-@model LibraryWebApp.Models.Title
+@model LibraryWebApp.Models.LibraryViewModels.TitleViewModel
 
 @{
     ViewData["Title"] = "Create";
@@ -12,58 +12,58 @@
         <hr />
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
         <div class="form-group">
-            <label asp-for="Annotation" class="col-md-2 control-label"></label>
+            <label asp-for="Title.Annotation" class="col-md-2 control-label"></label>
             <div class="col-md-10">
-                <input asp-for="Annotation" class="form-control" />
-                <span asp-validation-for="Annotation" class="text-danger" />
+                <input asp-for="Title.Annotation" class="form-control" />
+                <span asp-validation-for="Title.Annotation" class="text-danger" />
             </div>
         </div>
         <div class="form-group">
-            <label asp-for="Author" class="col-md-2 control-label"></label>
+            <label asp-for="Title.Author" class="col-md-2 control-label"></label>
             <div class="col-md-10">
-                <input asp-for="Author" class="form-control" />
-                <span asp-validation-for="Author" class="text-danger" />
+                <input asp-for="Title.Author" class="form-control" />
+                <span asp-validation-for="Title.Author" class="text-danger" />
             </div>
         </div>
         <div class="form-group">
-            <label asp-for="ISBN" class="col-md-2 control-label"></label>
+            <label asp-for="Title.ISBN" class="col-md-2 control-label"></label>
             <div class="col-md-10">
-                <input asp-for="ISBN" class="form-control" />
-                <span asp-validation-for="ISBN" class="text-danger" />
+                <input asp-for="Title.ISBN" class="form-control" />
+                <span asp-validation-for="Title.ISBN" class="text-danger" />
             </div>
         </div>
         <div class="form-group">
-            <label asp-for="Name" class="col-md-2 control-label"></label>
+            <label asp-for="Title.Name" class="col-md-2 control-label"></label>
             <div class="col-md-10">
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger" />
+                <input asp-for="Title.Name" class="form-control" />
+                <span asp-validation-for="Title.Name" class="text-danger" />
             </div>
         </div>
         <div class="form-group">
-            <label asp-for="Publisher" class="col-md-2 control-label"></label>
+            <label asp-for="Title.Publisher" class="col-md-2 control-label"></label>
             <div class="col-md-10">
-                <input asp-for="Publisher" class="form-control" />
-                <span asp-validation-for="Publisher" class="text-danger" />
+                <input asp-for="Title.Publisher" class="form-control" />
+                <span asp-validation-for="Title.Publisher" class="text-danger" />
             </div>
         </div>
         <div class="form-group">
-            <label asp-for="SectionId" class="col-md-2 control-label"></label>
+            <label asp-for="Title.SectionId" class="col-md-2 control-label"></label>
             <div class="col-md-10">
-                <select asp-for="SectionId" class ="form-control" asp-items="ViewBag.SectionId"></select>
+                <select asp-for="Title.SectionId" class ="form-control" asp-items="ViewBag.SectionId"></select>
             </div>
         </div>
         <div class="form-group">
-            <label asp-for="Type" class="col-md-2 control-label"></label>
+            <label asp-for="Title.Type" class="col-md-2 control-label"></label>
             <div class="col-md-10">
-                <input asp-for="Type" class="form-control" />
-                <span asp-validation-for="Type" class="text-danger" />
+                <input asp-for="Title.Type" class="form-control" />
+                <span asp-validation-for="Title.Type" class="text-danger" />
             </div>
         </div>
         <div class="form-group">
-            <label asp-for="Year" class="col-md-2 control-label"></label>
+            <label asp-for="Title.Year" class="col-md-2 control-label"></label>
             <div class="col-md-10">
-                <input asp-for="Year" class="form-control" />
-                <span asp-validation-for="Year" class="text-danger" />
+                <input asp-for="Title.Year" class="form-control" />
+                <span asp-validation-for="Title.Year" class="text-danger" />
             </div>
         </div>
         <div class="form-group">

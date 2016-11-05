@@ -1,4 +1,4 @@
-@model IEnumerable<LibraryWebApp.Models.Item>
+@model IEnumerable<LibraryWebApp.Models.LibraryViewModels.ItemViewModel>
 
 @{
     ViewData["Title"] = "Index";
@@ -22,13 +22,13 @@
                 Section
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Condition)
+                @Html.DisplayNameFor(model => model.Item.Condition)
             </th>
             <th>
                 Current Location
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Material)
+                @Html.DisplayNameFor(model => model.Item.Material)
             </th>
             <th></th>
         </tr>
@@ -37,31 +37,31 @@
 @foreach (var item in Model) {
         <tr>
             <td>
-                @Html.DisplayFor(modelItem => item.Title.Name)
+                @Html.DisplayFor(modelItem => item.Item.Title.Name)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Title.Section.Name)
+                @Html.DisplayFor(modelItem => item.Item.Title.Section.Name)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Condition)
+                @Html.DisplayFor(modelItem => item.Item.Condition)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.CurrentLocation)
+                @Html.DisplayFor(modelItem => item.Item.CurrentLocation)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Material)
+                @Html.DisplayFor(modelItem => item.Item.Material)
             </td>
             <td>
 
                 @if (User.IsInRole("Admin") || User.IsInRole("Librarian"))
                 {
-                <a asp-action="ItemEdit" asp-route-id="@item.ItemId">Edit |</a>
-                <a asp-action="ItemDetails" asp-route-id="@item.ItemId">Details |</a> 
-                <a asp-action="ItemDelete" asp-route-id="@item.ItemId">Delete |</a> 
+                <a asp-action="ItemEdit" asp-route-id="@item.Item.ItemId">Edit |</a>
+                <a asp-action="ItemDetails" asp-route-id="@item.Item.ItemId">Details |</a> 
+                <a asp-action="ItemDelete" asp-route-id="@item.Item.ItemId">Delete |</a> 
                 }
                 @if (User.IsInRole("Admin") || User.IsInRole("Librarian") || User.IsInRole("RegUser"))
                 {
-                <a asp-action="ItemAddToFavourites" asp-route-id="@item.ItemId">Add To Favourites</a>
+                <a asp-action="ItemAddToFavourites" asp-route-id="@item.Item.ItemId">Add To Favourites</a>
                 }
             </td>
         </tr>

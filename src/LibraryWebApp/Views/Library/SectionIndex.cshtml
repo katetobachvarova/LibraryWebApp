@@ -1,4 +1,4 @@
-@model IEnumerable<LibraryWebApp.Models.Section>
+@model IEnumerable<LibraryWebApp.Models.LibraryViewModels.SectionViewModel>
 
 @{
     ViewData["Title"] = "Index";
@@ -16,10 +16,10 @@
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.Description)
+                @Html.DisplayNameFor(model => model.Section.Description)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Name)
+                @Html.DisplayNameFor(model => model.Section.Name)
             </th>
             <th></th>
         </tr>
@@ -28,17 +28,17 @@
 @foreach (var item in Model) {
         <tr>
             <td>
-                @Html.DisplayFor(modelItem => item.Description)
+                @Html.DisplayFor(modelItem => item.Section.Description)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Name)
+                @Html.DisplayFor(modelItem => item.Section.Name)
             </td>
             <td>
                 @if (User.IsInRole("Admin") || User.IsInRole("Librarian"))
                 {
-                <a asp-action="SectionEdit" asp-route-id="@item.SectionId">Edit |</a>
-                <a asp-action="SectionDetails" asp-route-id="@item.SectionId">Details |</a>
-                <a asp-action="SectionDelete" asp-route-id="@item.SectionId">Delete</a>
+                <a asp-action="SectionEdit" asp-route-id="@item.Section.SectionId">Edit |</a>
+                <a asp-action="SectionDetails" asp-route-id="@item.Section.SectionId">Details |</a>
+                <a asp-action="SectionDelete" asp-route-id="@item.Section.SectionId">Delete</a>
                 }
             </td>
         </tr>

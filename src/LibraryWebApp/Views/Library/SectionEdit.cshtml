@@ -1,4 +1,4 @@
-@model LibraryWebApp.Models.Section
+@model LibraryWebApp.Models.LibraryViewModels.SectionViewModel
 
 @{
     ViewData["Title"] = "Edit";
@@ -11,20 +11,20 @@
         <h4>Section</h4>
         <hr />
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-        <input type="hidden" asp-for="SectionId" />
-        <input type="hidden" asp-for="RowVersion" />
+        <input type="hidden" asp-for="Section.SectionId" />
+        <input type="hidden" asp-for="Section.RowVersion" />
         <div class="form-group">
-            <label asp-for="Description" class="col-md-2 control-label"></label>
+            <label asp-for="Section.Description" class="col-md-2 control-label"></label>
             <div class="col-md-10">
-                <input asp-for="Description" class="form-control" />
-                <span asp-validation-for="Description" class="text-danger" ></span>
+                <input asp-for="Section.Description" class="form-control" />
+                <span asp-validation-for="Section.Description" class="text-danger" ></span>
             </div>
         </div>
         <div class="form-group">
-            <label asp-for="Name" class="col-md-2 control-label"></label>
+            <label asp-for="Section.Name" class="col-md-2 control-label"></label>
             <div class="col-md-10">
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
+                <input asp-for="Section.Name" class="form-control" />
+                <span asp-validation-for="Section.Name" class="text-danger"></span>
             </div>
         </div>
         <div class="form-group">
@@ -36,7 +36,7 @@
 </form>
 
 <div>
-    <a asp-action="Index">Back to List</a>
+    <a asp-action="SectionIndex">Back to List</a>
 </div>
 
 @section Scripts {

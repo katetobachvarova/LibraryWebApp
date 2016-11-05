@@ -1,4 +1,4 @@
-@model LibraryWebApp.Models.Item
+@model LibraryWebApp.Models.LibraryViewModels.ItemViewModel
 
 @{
     ViewData["Title"] = "Edit";
@@ -11,34 +11,34 @@
         <h4>Item</h4>
         <hr />
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-        <input type="hidden" asp-for="ItemId" />
-        <input type="hidden" asp-for="RowVersion" />
+        <input type="hidden" asp-for="Item.ItemId" />
+        <input type="hidden" asp-for="Item.RowVersion" />
         <div class="form-group">
-            <label asp-for="Condition" class="col-md-2 control-label"></label>
+            <label asp-for="Item.Condition" class="col-md-2 control-label"></label>
             <div class="col-md-10">
-                <input asp-for="Condition" class="form-control" />
-                <span asp-validation-for="Condition" class="text-danger" ></span>
+                <input asp-for="Item.Condition" class="form-control" />
+                <span asp-validation-for="Item.Condition" class="text-danger" ></span>
             </div>
         </div>
         <div class="form-group">
-            <label asp-for="CurrentLocation" class="col-md-2 control-label"></label>
+            <label asp-for="Item.CurrentLocation" class="col-md-2 control-label"></label>
             <div class="col-md-10">
-                <input asp-for="CurrentLocation" class="form-control" />
-                <span asp-validation-for="CurrentLocation" class="text-danger"></span>
+                <input asp-for="Item.CurrentLocation" class="form-control" />
+                <span asp-validation-for="Item.CurrentLocation" class="text-danger"></span>
             </div>
         </div>
         <div class="form-group">
-            <label asp-for="Material" class="col-md-2 control-label"></label>
+            <label asp-for="Item.Material" class="col-md-2 control-label"></label>
             <div class="col-md-10">
-                <input asp-for="Material" class="form-control" />
-                <span asp-validation-for="Material" class="text-danger"></span>
+                <input asp-for="Item.Material" class="form-control" />
+                <span asp-validation-for="Item.Material" class="text-danger"></span>
             </div>
         </div>
         <div class="form-group">
-            <label asp-for="Title" class="control-label col-md-2"></label>
+            <label asp-for="Item.Title" class="control-label col-md-2"></label>
             <div class="col-md-10">
-                <select asp-for="TitleId" class="form-control" asp-items="ViewBag.TitleId"></select>
-                <span asp-validation-for="TitleId" class="text-danger"></span>
+                <select asp-for="Item.TitleId" class="form-control" asp-items="ViewBag.TitleId"></select>
+                <span asp-validation-for="Item.TitleId" class="text-danger"></span>
             </div>
         </div>
         <div class="form-group">

@@ -1,4 +1,4 @@
-@model LibraryWebApp.Models.ItemMovement
+@model LibraryWebApp.Models.LibraryViewModels.ItemMovementViewModel
 
 @{
     ViewData["Title"] = "Edit";
@@ -11,13 +11,13 @@
         <h4>ItemMovement</h4>
         <hr />
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-        <input type="hidden" asp-for="ItemMovementId" />
-        <input type="hidden" asp-for="RowVersion" />
+        <input type="hidden" asp-for="ItemMovement.ItemMovementId" />
+        <input type="hidden" asp-for="ItemMovement.RowVersion" />
         <div class="form-group">
-            <label asp-for="Deadline" class="col-md-2 control-label"></label>
+            <label asp-for="ItemMovement.Deadline" class="col-md-2 control-label"></label>
             <div class="col-md-10">
-                @Html.TextBoxFor(model => model.Deadline, new { type = "date" })
-                <span asp-validation-for="Deadline" class="text-danger" ></span>
+                @Html.TextBoxFor(model => model.ItemMovement.Deadline, new { type = "date" })
+                <span asp-validation-for="ItemMovement.Deadline" class="text-danger" ></span>
             </div>
         </div>
         

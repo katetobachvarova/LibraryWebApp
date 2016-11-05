@@ -1,4 +1,4 @@
-@model LibraryWebApp.Models.ItemMovement
+@model LibraryWebApp.Models.LibraryViewModels.ItemMovementViewModel
 
 @{
     ViewData["Title"] = "Delete";
@@ -19,22 +19,22 @@
         </dd>
 
         <dt>
-            @Html.DisplayNameFor(model => model.Condition)
+            @Html.DisplayNameFor(model => model.ItemMovement.Condition)
         </dt>
         <dd>
-            @Html.DisplayFor(model => model.Condition)
+            @Html.DisplayFor(model => model.ItemMovement.Condition)
         </dd>
         <dt>
-            @Html.DisplayNameFor(model => model.Date)
+            @Html.DisplayNameFor(model => model.ItemMovement.Date)
         </dt>
         <dd>
-            @Html.DisplayFor(model => model.Date)
+            @Html.DisplayFor(model => model.ItemMovement.Date)
         </dd>
         <dt>
-            @Html.DisplayNameFor(model => model.Deadline)
+            @Html.DisplayNameFor(model => model.ItemMovement.Deadline)
         </dt>
         <dd>
-            @Html.DisplayFor(model => model.Deadline)
+            @Html.DisplayFor(model => model.ItemMovement.Deadline)
         </dd>
         <dt>
             Librarian
@@ -43,10 +43,10 @@
             @ViewData["LibrarianId"]
         </dd>
         <dt>
-            @Html.DisplayNameFor(model => model.MovementType)
+            @Html.DisplayNameFor(model => model.ItemMovement.MovementType)
         </dt>
         <dd>
-            @Html.DisplayFor(model => model.MovementType)
+            @Html.DisplayFor(model => model.ItemMovement.MovementType)
         </dd>
         <dt>
             Title
