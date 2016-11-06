@@ -21,15 +21,19 @@ namespace LibraryWebApp.Controllers
         private readonly IAuthorizationService _authorizationService;
         private readonly RoleManager<IdentityRole> _roleManager;
 
+        private readonly IItemRepository _itemRepository;
+
         public LibraryController(ApplicationDbContext context,
             UserManager<ApplicationUser> userManager,
             RoleManager<IdentityRole> roleManager,
-            IAuthorizationService authorizationService)
+            IAuthorizationService authorizationService,
+            ItemRepository itemRepository)
         {
             _context = context;
             _userManager = userManager;
             _roleManager = roleManager;
             _authorizationService = authorizationService;
+            _itemRepository = itemRepository;
         }
 
         #region Users
@@ -1014,7 +1018,7 @@ namespace LibraryWebApp.Controllers
         // GET: Items
         public async Task<IActionResult> ItemIndex()
         {
-            var items = await _context.Items.Include(i => i.Title).Include(e => e.Title.Section).ToListAsync();
+            var items = await _itemRepository.SelectAll();
             var itemsVM = new List<ItemViewModel>();
             foreach (var item in items)
             {
@@ -1027,10 +1031,11 @@ namespace LibraryWebApp.Controllers
         [Authorize(Roles = "Admin, Librarian, RegUser")]
         public async Task<IActionResult> ItemDetails(int? id)
         {
-
-            var item = await _context.Items.SingleOrDefaultAsync(m => m.ItemId == id);
-            var titleName = _context.Titles.Where(e => e.TitleId == item.TitleId).FirstOrDefault().Name;
-            ViewData["TitleName"] = titleName;
+            if (id == null)
+            {
+                return NotFound();
+            }
+            var item =  await _itemRepository.SelectByID(id.ToString());
             if (item == null)
             {
                 return NotFound();
@@ -1056,8 +1061,8 @@ namespace LibraryWebApp.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(itemVM.Item);
-                await _context.SaveChangesAsync();
+                 _itemRepository.Insert(itemVM.Item);
+                await _itemRepository.Save();
                 return RedirectToAction("ItemIndex");
             }
             ViewData["TitleId"] = new SelectList(_context.Titles, "TitleId", "TitleId", itemVM.Item.TitleId);
@@ -1073,7 +1078,7 @@ namespace LibraryWebApp.Controllers
                 return NotFound();
             }
 
-            var item = await _context.Items.SingleOrDefaultAsync(m => m.ItemId == id);
+            var item = await _itemRepository.SelectByID(id.ToString());
             if (item == null)
             {
                 return NotFound();
@@ -1094,8 +1099,7 @@ namespace LibraryWebApp.Controllers
             {
                 return NotFound();
             }
-
-            var item = await _context.Items.SingleOrDefaultAsync(m => m.ItemId == id);
+            var item = await _itemRepository.SelectByID(id.ToString());
             if (item == null)
             {
                 Item deletedItem = new Item();
@@ -1111,23 +1115,20 @@ namespace LibraryWebApp.Controllers
             item.Condition = itemVM.Item.Condition;
             item.CurrentLocation = itemVM.Item.CurrentLocation;
             item.TitleId = itemVM.Item.TitleId;
-
             try
             {
-                    await _context.SaveChangesAsync();
-                    return RedirectToAction("ItemIndex");
+                await _itemRepository.Save();
+                return RedirectToAction("ItemIndex");
                 }
                 catch (DbUpdateConcurrencyException ex)
                 {
                     ModelState.Clear();
                     var exceptionEntry = ex.Entries.Single();
-                    // Using a NoTracking query means we get the entity but it is not tracked by the context
-                    // and will not be merged with existing entities in the context.
-                    var databaseEntity = await _context.Items
-                        .AsNoTracking()
-                        .SingleAsync(d => d.ItemId == ((Item)exceptionEntry.Entity).ItemId);
+                // Using a NoTracking query means we get the entity but it is not tracked by the context
+                // and will not be merged with existing entities in the context.
+                var databaseEntity = await _itemRepository.SelectByIDAsNoTracking(((Item)exceptionEntry.Entity).ItemId.ToString());
 
-                    var databaseEntry = _context.Entry(databaseEntity);
+                var databaseEntry = _context.Entry(databaseEntity);
 
                     
                     var databaseCondition = (string)databaseEntry.Property("Condition").CurrentValue;
@@ -1177,8 +1178,7 @@ namespace LibraryWebApp.Controllers
             {
                 return NotFound();
             }
-
-            var item = await _context.Items.AsNoTracking().SingleOrDefaultAsync(m => m.ItemId == id);
+            var item = await _itemRepository.SelectByID(id.ToString());
             if (item == null)
             {
                 if (concurrencyError.GetValueOrDefault())
@@ -1210,9 +1210,9 @@ namespace LibraryWebApp.Controllers
             {
                 if (await _context.Items.AnyAsync(m => m.ItemId == id))
                 {
-                    var item = await _context.Items.SingleOrDefaultAsync(m => m.ItemId == id);
-                    _context.Items.Remove(item);
-                    await _context.SaveChangesAsync();
+                    var item = await _itemRepository.SelectByID(id.ToString());
+                    await _itemRepository.Delete(item.ItemId.ToString());
+                    await _itemRepository.Save();
                 }
                 return RedirectToAction("ItemIndex");
             }
